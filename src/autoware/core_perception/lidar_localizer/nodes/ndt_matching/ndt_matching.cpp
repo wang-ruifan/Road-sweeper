@@ -152,7 +152,8 @@ static geometry_msgs::PoseStamped ndt_pose_msg;
 static ros::Publisher current_pose_pub;
 static geometry_msgs::PoseStamped current_pose_msg;
  */
-static ros::Publisher initialpose_pub;
+
+static ros::Publisher initialpose_pub;  // Added by wang-ruifan
 
 static ros::Publisher localizer_pose_pub;
 static geometry_msgs::PoseStamped localizer_pose_msg;
@@ -169,7 +170,7 @@ static double fitness_score = 0.0;
 static double trans_probability = 0.0;
 
 // reference for comparing fitness_score, default value set to 500.0
-static double _gnss_reinit_fitness = 1.0;
+static double _gnss_reinit_fitness = 1.0; // Change by wang-ruifan: from 500.0 to 1.0
 
 static double diff = 0.0;
 static double diff_x = 0.0, diff_y = 0.0, diff_z = 0.0, diff_yaw;
@@ -556,6 +557,7 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 
   if ((_use_gnss == 1 && init_pos_set == 0) || fitness_score >= _gnss_reinit_fitness)
   {
+    // Following changed by wang-ruifan
     /*previous_pose.x = previous_gnss_pose.x;
     previous_pose.y = previous_gnss_pose.y;
     previous_pose.z = previous_gnss_pose.z;
@@ -599,10 +601,11 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
     initialpose_msg.pose.pose = input->pose;
     initialpose_msg.pose.covariance[0] = 0.25;
     initialpose_msg.pose.covariance[6 * 1 + 1] = 0.25;
-    initialpose_msg.pose.covariance[6 * 5 + 5] = 0.06853892326654787;
+    initialpose_msg.pose.covariance[6 * 5 + 5] = 0.05;
     initialpose_pub.publish(initialpose_msg);
 
     init_pos_set = 1;
+    // Changed end
   }
 
   previous_gnss_pose.x = current_gnss_pose.x;

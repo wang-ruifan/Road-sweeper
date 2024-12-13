@@ -42,20 +42,6 @@ static void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
 {
   geo_pos_conv geo;
 
-  /*if(_plane == 7) {
-    int lon_deg, lon_min, lat_deg, lat_min;
-    double m_PLato, m_PLo;
-    lon_deg = 22;
-    lon_min = 31;
-    lat_deg = 113;
-    lat_deg = 56;
-    std::cout << "lon:" << lon_deg << " " << lon_min << ", lat:" << lat_deg << " " << lat_min;
-    m_PLo = M_PI * (static_cast<double>(lat_deg) + static_cast<double>(lat_min) / 60.0) / 180.0;
-    m_PLato = M_PI * (static_cast<double>(lon_deg) + static_cast<double>(lon_min) / 60.0) / 180;
-  }else{
-    geo.set_plane(_plane);
-  }*/
-
   geo.set_plane(_plane);
   geo.llh_to_xyz(msg->latitude, msg->longitude, msg->altitude);
 

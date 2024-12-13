@@ -107,6 +107,7 @@ void geo_pos_conv::set_plane(int num)
   }
   else if (num == 7)
   {
+    // Changed by wang-ruifan
     /*lon_deg = 36;
     lon_min = 0;
     lat_deg = 137;
@@ -116,6 +117,7 @@ void geo_pos_conv::set_plane(int num)
     lon_min = 31;
     lat_deg = 113;
     lat_min = 56;
+    // Changed end
   }
   else if (num == 8)
   {
@@ -360,7 +362,8 @@ void geo_pos_conv::conv_llh2xyz(void)
   Eigen::RowVector3f T;
   Eigen::RowVector3f m_3;
   Eigen::RowVector3f m_4;
-    
+  
+  // Added by wang-ruifan
   // 原始笛卡尔坐标（ m_y, m_x, m_z）分配给m_3向量，赋值顺序为y,x,z
   m_3 << m_y, m_x, m_z;
 
@@ -378,6 +381,7 @@ void geo_pos_conv::conv_llh2xyz(void)
   m_y = m_4[0];
   m_x = m_4[1];
   m_z = m_4[2];
+  // Added end
 }
 
 void geo_pos_conv::conv_xyz2llh(void)

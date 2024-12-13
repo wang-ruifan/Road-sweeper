@@ -246,6 +246,7 @@ void publishCloudClusters(const ros::Publisher *in_publisher, const autoware_msg
         cluster_transformed.eigen_values = i->eigen_values;
         cluster_transformed.eigen_vectors = i->eigen_vectors;
 
+        // Following added by wang-ruifan
         cluster_transformed.avg_point.point.x = cluster_transformed.centroid_point.point.x;
 
         cluster_transformed.avg_point.point.y = cluster_transformed.centroid_point.point.y;
@@ -257,6 +258,7 @@ void publishCloudClusters(const ros::Publisher *in_publisher, const autoware_msg
         static unsigned int id=0;
 
         cluster_transformed.id = id++;
+        // Added end
 
         cluster_transformed.convex_hull = i->convex_hull;
         cluster_transformed.bounding_box.pose.position = i->bounding_box.pose.position;
