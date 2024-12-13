@@ -1,0 +1,7 @@
+<launch>
+
+    <node pkg="socketcan_bridge" name="topic_to_socketcan_node" type="topic_to_socketcan_node" output="screen"></node>
+
+    <node pkg="autowarecmd_to_can" name="autowarecmd_to_can_node" type="autowarecmd_to_can_node" output="screen"></node>
+
+</launch>
