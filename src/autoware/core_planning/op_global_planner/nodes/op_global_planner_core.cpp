@@ -464,8 +464,8 @@ void GlobalPlanner::MainLoop()
     {
       if(m_GeneratedTotalPaths.size() > 0 && m_GeneratedTotalPaths.at(0).size() > 3)
       {
-        // !modified! if(m_params.bEnableReplanning)
-        if(m_params.bEnableReplanning && m_iCurrentGoalIndex<m_GoalsPos.size()-1)
+        // Following if() changed by wang-ruifan: from "m_params.bEnableReplanning" to "m_params.bEnableReplanning && m_iCurrentGoalIndex<m_GoalsPos.size()-1"
+        if(m_params.bEnableReplanning && m_iCurrentGoalIndex < m_GoalsPos.size()-1)
         {
           PlannerHNS::RelativeInfo info;
           bool ret = PlannerHNS::PlanningHelpers::GetRelativeInfoRange(m_GeneratedTotalPaths, m_CurrentPose, 0.75, info);

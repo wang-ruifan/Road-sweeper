@@ -13,7 +13,7 @@
 
   <depend>amathutils_lib</depend>
   <depend>roscpp</depend>
-
+  <!-- Deleted <depend>libgeographiclib-dev</depend> by wang-ruifan -->
   <depend>lanelet2_core</depend>
   <depend>lanelet2_io</depend>
   <depend>lanelet2_maps</depend>

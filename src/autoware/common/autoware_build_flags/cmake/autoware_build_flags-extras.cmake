@@ -18,6 +18,7 @@ macro(AW_CHECK_CUDA)
     find_package(CUDA REQUIRED)
     find_package(Eigen3 REQUIRED)
 
+    # Changed by wang-ruifan: turn CUDA max version from 10.0 to 10.2
     if(NOT ${CUDA_VERSION} VERSION_LESS "10.2"
             AND NOT ${CUDA_VERSION} VERSION_EQUAL "10.2" )
       message(FATAL_ERROR "GPU support on Melodic requires CUDA<=10.2")

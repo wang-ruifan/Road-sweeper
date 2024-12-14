@@ -442,7 +442,7 @@ BehaviorStateMachine* GoalStateII::GetNextState()
 
 BehaviorStateMachine* MissionAccomplishedStateII::GetNextState()
 {
-  // !modified! return FindBehaviorState(this->m_Behavior);
+  // Following changed by wang-ruifan: from "return FindBehaviorState(this->m_Behavior);" to as follows
   PreCalculatedConditions* pCParams = GetCalcParams();
  
   if(pCParams->currentGoalID == -1)
