@@ -97,13 +97,13 @@ colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-select xxx
 请参考[Autoware使用教程](docs/Autoware自动驾驶使用教程v1.2.pdf)
 
 ### 使用Autoware命令转换至CAN  
-查看相关[使用说明](src/autowarecmd_to_can/README.md)
+查看相关[使用说明](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autowarecmd_to_can/README.md)
 
 ## 使用Autoware源代码遇到的问题
 
 1. rosdep时报错：libgeographiclib-dev is not available  
 ![进行rosdep时报错](images/Problem-libgeographiclib-dev.png)  
-同时，安装替换项libgeographic-dev也无法解决。在[Ubuntu Package发行网站上搜索](https://packages.ubuntu.com/search?suite=all&searchon=names&keywords=libgeographiclib-dev)，只在24.04和24.10下提供，可能是由于Autoware.ai版本太老，没有更新，当时所需的package已失效。在源代码的package.xml中搜索，发现只有[lanelet2_extension](src/autoware/common/lanelet2_extension/package.xml)中需求libgeographiclib-dev。而高精地图还有vector map的格式，故通过[修改lanelet2_extension的package.xml](#lanelet2_extension包信息文件-删除对libgeographiclib-dev的依赖)。重新进行rosdep后，所有依赖项均安装完成。  
+同时，安装替换项libgeographic-dev也无法解决。在[Ubuntu Package发行网站上搜索](https://packages.ubuntu.com/search?suite=all&searchon=names&keywords=libgeographiclib-dev)，只在24.04和24.10下提供，可能是由于Autoware.ai版本太老，没有更新，当时所需的package已失效。在源代码的package.xml中搜索，发现只有[lanelet2_extension](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/lanelet2_extension/package.xml)中需求libgeographiclib-dev。而高精地图还有vector map的格式，故通过[修改lanelet2_extension的package.xml](#lanelet2_extension包信息文件-删除对libgeographiclib-dev的依赖)。重新进行rosdep后，所有依赖项均安装完成。  
 ![rosdep完成](images/Problem-libgeographiclib-dev-solved.png)
 
 
@@ -120,7 +120,7 @@ colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-select xxx
 
 4. 使用fix2pose定位转换为位姿时，发布的gps pose与点云地图不匹配，偏差很大  
 因为Autoware是日本开发的，所以在gps/fix转换为pose时的参考经纬度都设在日本。故需要修改为所在地的经纬度。  
-搜索后参考[Blog](https://blog.yanjingang.com/?p=10031)及[附赠的Autoware使用手册](docs/Autoware自动驾驶使用教程v1.2.pdf)中的gnss辅助定位，对[经纬度转换为位姿信息的对象，修改了参考点的经纬度和位姿发布的业务逻辑](#gnss信息转换对象修改所在地经纬度增加转换矩阵)，将旋转矩阵和平移向量修改为播放bag并运行定位和[gnss转换矩阵计算节点](src/gnss_matrix/scripts/gnss_matrix.py)得到的值(gnss转换矩阵计算已单独打包为gnss_matrix，[使用方法](src/gnss_matrix/README.md))。  
+搜索后参考[Blog](https://blog.yanjingang.com/?p=10031)及[附赠的Autoware使用手册](docs/Autoware自动驾驶使用教程v1.2.pdf)中的gnss辅助定位，对[经纬度转换为位姿信息的对象，修改了参考点的经纬度和位姿发布的业务逻辑](#gnss信息转换对象修改所在地经纬度增加转换矩阵)，将旋转矩阵和平移向量修改为播放bag并运行定位和[gnss转换矩阵计算节点](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/gnss_matrix/scripts/gnss_matrix.py)得到的值(gnss转换矩阵计算已单独打包为gnss_matrix，[使用方法](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/gnss_matrix/README.md))。  
 之后重新编译gnss包，运行后显示gps与实际位置匹配良好。
 
 5. 使用GNSS辅助NDT定位时，频繁重定位  
@@ -140,40 +140,40 @@ colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-select xxx
 为了解决上述问题，我对Autoware的源代码进行了以下修改：  
 
 ### lanelet2_extension包信息文件: 删除对libgeographiclib-dev的依赖
-修改了[package.xml](src/autoware/common/lanelet2_extension/package.xml)，删除了其中对libgeographiclib-dev的依赖。  
+修改了[package.xml](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/lanelet2_extension/package.xml)，删除了其中对libgeographiclib-dev的依赖。  
 
 ### autoware_build_flag的cmake文件：将需求CUDA版本从小于等于10.0变为小于等于10.2
-修改了[build_flages的cmake文件](src/autoware/common/autoware_build_flags/cmake/autoware_build_flags-extras.cmake)，将需要CUDA版本<=10.0改为<=10.2。  
+修改了[build_flages的cmake文件](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/autoware_build_flags/cmake/autoware_build_flags-extras.cmake)，将需要CUDA版本<=10.0改为<=10.2。  
 
 ### op_global_planner节点：修改MainLoop主循环中执行重规划的条件
-修改了[op全局规划](src/autoware/core_planning/op_global_planner/nodes/op_global_planner_core.cpp)的主循环MainLoop中，执行Replanning业务逻辑的条件，增加了“m_iCurrentGoalIndex < m_GoalsPos.size()-1”。  
+修改了[op全局规划](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/core_planning/op_global_planner/nodes/op_global_planner_core.cpp)的主循环MainLoop中，执行Replanning业务逻辑的条件，增加了“m_iCurrentGoalIndex < m_GoalsPos.size()-1”。  
 
 ### op_planner的车辆行为状态对象：修改当前路径任务完成时，发布的状态信息
-修改了[op_planner的车辆行为状态对象](src/autoware/common/op_planner/src/BehaviorStateMachine.cpp)，修改了其中的当前路径任务完成对象的GetNextState方法的业务逻辑，在当前没有目标时，返回当前的状态; 否则将当前目标设为上一个目标，并发布状态为前进。  
+修改了[op_planner的车辆行为状态对象](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/op_planner/src/BehaviorStateMachine.cpp)，修改了其中的当前路径任务完成对象的GetNextState方法的业务逻辑，在当前没有目标时，返回当前的状态; 否则将当前目标设为上一个目标，并发布状态为前进。  
 
 ### GNSS信息转换对象：修改所在地经纬度，增加转换矩阵
-修改了[GNSS信息转换为pose对象](src/autoware/common/gnss/src/geo_pos_conv.cpp)中的set_plane方法，在当传入的num为7时，设置纬度和经度为建图时录制的bag的/gps/fix话题的第一帧数据转换为度分秒后得到的度和分。同时在conv_llh2xyz经纬度转换为位姿方法的最后添加使用旋转矩阵和平移向量进行计算。  
+修改了[GNSS信息转换为pose对象](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/gnss/src/geo_pos_conv.cpp)中的set_plane方法，在当传入的num为7时，设置纬度和经度为建图时录制的bag的/gps/fix话题的第一帧数据转换为度分秒后得到的度和分。同时在conv_llh2xyz经纬度转换为位姿方法的最后添加使用旋转矩阵和平移向量进行计算。  
 
 ### NDT定位节点：修改使用GNSS辅助定位时的位姿重置逻辑
-修改了[NDT-Matching定位](src/autoware/core_perception/lidar_localizer/nodes/ndt_matching/ndt_matching.cpp)的gnss_callback回调函数的业务逻辑，当启用GNSS进行辅助定位，同时没有发布初始位姿或ndt定位质量差时。直接使用当前的gnss位姿信息，发布初始位姿。同时修改调用gnss重置位姿的阈值为1，并添加一个初始位姿发布者initialpose_pub并设置发布话题名为/initialpose。  
+修改了[NDT-Matching定位](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/core_perception/lidar_localizer/nodes/ndt_matching/ndt_matching.cpp)的gnss_callback回调函数的业务逻辑，当启用GNSS进行辅助定位，同时没有发布初始位姿或ndt定位质量差时。直接使用当前的gnss位姿信息，发布初始位姿。同时修改调用gnss重置位姿的阈值为1，并添加一个初始位姿发布者initialpose_pub并设置发布话题名为/initialpose。  
 
 ### 点云滤波跟踪节点：修改订阅话题
-修改了[点云卡尔曼滤波跟踪](src/autoware/core_perception/lidar_kf_contour_track/nodes/lidar_kf_contour_track/lidar_kf_contour_track_core.cpp)的sub_cloud_clusters订阅者订阅的话题名，从/cloud_clusters修改为/detection/lidar_detector/cloud_clusters。  
+修改了[点云卡尔曼滤波跟踪](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/core_perception/lidar_kf_contour_track/nodes/lidar_kf_contour_track/lidar_kf_contour_track_core.cpp)的sub_cloud_clusters订阅者订阅的话题名，从/cloud_clusters修改为/detection/lidar_detector/cloud_clusters。  
 
 ### 点云欧式聚类节点：增加发布信息
-修改了[雷达点云欧式聚类](src/autoware/core_perception/lidar_euclidean_cluster_detect/nodes/lidar_euclidean_cluster_detect/lidar_euclidean_cluster_detect.cpp)的publishCloudClusters方法内的点云聚类发布消息的内容，增加了对聚类转换的平均点、状态和id的赋值。  
+修改了[雷达点云欧式聚类](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/core_perception/lidar_euclidean_cluster_detect/nodes/lidar_euclidean_cluster_detect/lidar_euclidean_cluster_detect.cpp)的publishCloudClusters方法内的点云聚类发布消息的内容，增加了对聚类转换的平均点、状态和id的赋值。  
 
 
 # Road Sweeper Project
 
-## Project Overview
+## Project Introduction
 - This is a large-scale road sweeper project based on Ubuntu 18.04, ROS Melodic, and Autoware 1.14.
 - The control board used is NVIDIA Jetson Xavier NX, the chassis is a wire-controlled chassis, and CAN is used for communication.
 - This repository contains modified Autoware code, packages for interfacing Autoware's chassis control commands with CAN, LiDAR and IMU/GNSS driver packages, map files, etc.
-### This repository is for personal record and retention purposes. Issues will not be responded to, and the usability of the code is not guaranteed.
+### This repository is for personal record and retention. Issues will not be responded to, and the usability of the code is not guaranteed.
 
 ## Table of Contents
-- [Project Overview](#project-overview)
+- [Project Introduction](#project-introduction)
 - [Function Description](#function-description)
 - [Installation Guide](#installation-guide)
 - [Usage Instructions](#usage-instructions)
@@ -201,14 +201,14 @@ Note: Choose Jetpack version 4.x.x for Ubuntu 18.04, install only Jetson OS, and
 - Install jtop, CUDA 10.2, cuDNN  
 Refer to [CSDN Blog](https://blog.csdn.net/a111222zw/article/details/120632906)
 - Install TensorRT  
-Refer to the TensorRT installation section in [CSDN Blog](https://blog.csdn.net/weixin_43541510/article/details/130796360), note that the TensorRT version must be 7, otherwise there will be errors when compiling Autoware.
+Refer to the section on installing TensorRT separately in [CSDN Blog](https://blog.csdn.net/weixin_43541510/article/details/130796360), note that the TensorRT version must be 7, otherwise there will be errors when compiling Autoware.
 - Install ROS Melodic  
-Use Fishros ROS one-click installation  
+Use FishROS one-click installation  
 ```shell
 wget http://fishros.com/install -O fishros && . fishros
 ```
 Select 1 for one-click ROS installation, choose to change the system source, and select the Melodic (desktop) version.
-- Install Autoware build system dependencies  
+- Install Autoware compilation system dependencies  
 ```shell
 sudo apt update
 sudo apt install python3-pip
@@ -230,7 +230,7 @@ git clone -b main https://github.com/wang-ruifan/Road-sweeper.git
 ```
 
 - Install rosdepc
-Use Fishros ROS one-click installation for rosdepc  
+Use FishROS one-click installation of rosdepc  
 ```shell
 wget http://fishros.com/install -O fishros && . fishros
 ```
@@ -259,55 +259,62 @@ colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-select xxx
 Refer to [Autoware Usage Tutorial](docs/Autoware自动驾驶使用教程v1.2.pdf)
 
 ### Converting Autoware commands to CAN  
-See the related [Usage Instructions](src/autowarecmd_to_can/README.md)
+Refer to the [Usage Instructions](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autowarecmd_to_can/README.md)
 
 ## Issues Encountered with Autoware Source Code
 
 1. rosdep error: libgeographiclib-dev is not available  
 ![rosdep error](images/Problem-libgeographiclib-dev.png)  
-Installing the alternative libgeographic-dev did not solve the issue. Searching on the [Ubuntu Package website](https://packages.ubuntu.com/search?suite=all&searchon=names&keywords=libgeographiclib-dev), it is only available for 24.04 and 24.10. This may be because the Autoware.ai version is too old and the required package is no longer available. Searching the package.xml in the source code, only [lanelet2_extension](src/autoware/common/lanelet2_extension/package.xml) requires libgeographiclib-dev. Since high-precision maps also have vector map formats, the dependency on libgeographiclib-dev was removed by [modifying the package.xml of lanelet2_extension](#lanelet2_extension-package-xml-remove-dependency-on-libgeographiclib-dev). After re-running rosdep, all dependencies were installed successfully.  
+Installing the alternative libgeographic-dev did not solve the issue. Searching on the [Ubuntu Package website](https://packages.ubuntu.com/search?suite=all&searchon=names&keywords=libgeographiclib-dev), it is only available for 24.04 and 24.10, possibly because the Autoware.ai version is too old and the required package is no longer available. Searching the package.xml in the source code, only [lanelet2_extension](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/lanelet2_extension/package.xml) requires libgeographiclib-dev. Since high-precision maps also have vector map formats, the dependency on libgeographiclib-dev was removed from the package.xml of lanelet2_extension. After re-running rosdep, all dependencies were installed successfully.  
 ![rosdep completed](images/Problem-libgeographiclib-dev-solved.png)
 
-2. ndt_gpu failed when compiling with CUDA  
+2. ndt_gpu failed during CUDA compilation  
 Shows CMake Error  
 ![requires CUDA<=10.0](images/Problem-cuda.png)  
-Since Jetpack only provides x.2 versions of CUDA, and CUDA 10.0 and CUDA 10.2 libraries are almost identical, the issue was resolved by [modifying the cmake file](#autoware_build_flag-cmake-file-change-cuda-version-requirement). However, using the pcl_anh_gpu method for ndt_mapping and ndt_matching caused the GPU to max out and crash; using the pcl_anh method worked fine and was much faster than the pcl_generic method. Enabling GPU for Euclidean clustering also significantly improved speed, indicating that the GPU was being used for acceleration.
+Since Jetpack only provides x.2 versions of CUDA, and CUDA 10.0 and CUDA 10.2 libraries are almost identical, the cmake file was modified to resolve the issue.  
+However, using pcl_anh_gpu for ndt_mapping and ndt_matching caused the GPU to max out and crash; using pcl_anh worked normally and was much faster than pcl_generic. Enabling GPU for Euclidean clustering also sped up the process significantly, indicating that the GPU was being used for acceleration.
 
 3. op_planner does not continue to issue nav_goal after reaching the first nav_goal  
-Even with replanning enabled in op_global_planner, it did not replan after reaching the goal. No response to new nav_goal. Based on [CSDN Blog](https://blog.csdn.net/m0_65512360/article/details/143436798) and [CSDN Blog](https://blog.csdn.net/qq_38861347/article/details/134973913), the vehicle state switches to END when near the nav_goal but not fully reached, causing /final_waypoints to stop publishing speed information. The vehicle state should be FORWARD during normal driving. The issue was resolved by [modifying the conditions for replanning in the main loop of op_global_planner](#op_global_planner-main-loop-replanning-conditions) and [modifying the BehaviorStateMachine in op_planner](#op_planner-behaviorstatemachine-publish-state).
+Replanning was enabled in op_global_planner, but it did not replan after reaching the goal. No response to new nav_goal.  
+Based on [CSDN Blog](https://blog.csdn.net/m0_65512360/article/details/143436798) and [CSDN Blog](https://blog.csdn.net/qq_38861347/article/details/134973913), the vehicle state switches to END when near the nav_goal but not fully reached, causing /final_waypoints to not publish speed information. Normally, the vehicle state should be FORWARD.  
+The vehicle state publishing logic was modified to set the previous goal as the current goal and the vehicle state to FORWARD when a goal is incomplete. The main loop in op_global_planner and the BehaviorStateMachine in op_planner were modified. Recompiled op_planner and op_global_planner to resolve the issue.
 
-4. Large deviation between gps pose and point cloud map when converting fix2pose  
-Autoware's reference latitude and longitude for gps/fix to pose conversion are set in Japan. This was resolved by [modifying the reference latitude and longitude and adding a transformation matrix](#gnss-info-conversion-object-modify-reference-latitude-longitude-add-transformation-matrix) based on the first frame of /gps/fix in the recorded bag. The transformation matrix and translation vector were set to values obtained from the [gnss_matrix calculation node](src/gnss_matrix/scripts/gnss_matrix.py). After recompiling the gnss package, the gps matched the actual position well.
+4. Large deviation in gps pose when converting fix2pose  
+Autoware's reference latitude and longitude are set in Japan. Modified to local latitude and longitude.  
+Based on [Blog](https://blog.yanjingang.com/?p=10031) and the [Autoware Usage Manual](docs/Autoware自动驾驶使用教程v1.2.pdf), the reference point latitude and longitude and pose publishing logic were modified. Recompiled the gnss package, and the gps matched the actual position well.
 
 5. Frequent relocation when using GNSS-assisted NDT localization  
-GPS information is not always accurate, especially the orientation. When ndt matching fails, it calls gnss for localization, but due to orientation issues, it fails again, causing frequent switching between ndt and gnss. This was resolved by [modifying the logic for resetting the pose using gnss](#ndt-localization-node-modify-gnss-assisted-pose-reset-logic) based on [Blog](https://blog.yanjingang.com/?p=10031). After recompiling the lidar_localizer package, ndt localization worked well without manual initial pose publishing.
+GPS information is not always accurate, especially orientation. When ndt matching fails, it switches to gnss, causing frequent switching.  
+Based on [Blog](https://blog.yanjingang.com/?p=10031), the logic for resetting the pose using gnss was modified. Recompiled the lidar_localizer package to resolve the issue, improving ndt localization.
 
-6. No tracked object information when using open_planner for obstacle avoidance  
-Even with Euclidean clustering and filtered object tracking nodes running, no objects were displayed in rviz. The issue was due to topic name changes in Autoware 1.14. This was resolved by [modifying the subscribed topic in the tracking node](#point-cloud-tracking-node-modify-subscribed-topic). Additionally, object localization was improved by [modifying the published information in the Euclidean clustering node](#point-cloud-euclidean-clustering-node-add-published-info). After recompiling lidar_kf_contour_track and lidar_euclidean_cluster_detect packages, objects were correctly identified and obstacle avoidance worked.
+6. No object tracking information when using open_planner  
+Started Euclidean clustering and filtering nodes, but no object information in rviz.  
+Checked rqt_graph, found that lidar_euclidean_cluster_detect published two topics, but /cloud_clusters was not subscribed. Modified the subscription topic in lidar_kf_contour_track.  
+Improved object localization based on [CSDN Blog](https://blog.csdn.net/qq_38861347/article/details/126136849). Recompiled lidar_kf_contour_track and lidar_euclidean_cluster_detect to resolve the issue.
 
 ## Modifications to Autoware Source Code
-To address the above issues, the following modifications were made to the Autoware source code:
+To solve the above issues, the following modifications were made to the Autoware source code:
 
-### lanelet2_extension package.xml: Remove dependency on libgeographiclib-dev
-Modified [package.xml](src/autoware/common/lanelet2_extension/package.xml) to remove the dependency on libgeographiclib-dev.
+### lanelet2_extension package.xml: Removed dependency on libgeographiclib-dev
+Modified [package.xml](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/lanelet2_extension/package.xml) to remove the dependency on libgeographiclib-dev.
 
-### autoware_build_flag cmake file: Change CUDA version requirement from <=10.0 to <=10.2
-Modified [autoware_build_flags-extras.cmake](src/autoware/common/autoware_build_flags/cmake/autoware_build_flags-extras.cmake) to change the CUDA version requirement from <=10.0 to <=10.2.
+### autoware_build_flag cmake file: Changed required CUDA version to <=10.2
+Modified [autoware_build_flags-extras.cmake](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/autoware_build_flags/cmake/autoware_build_flags-extras.cmake) to change the required CUDA version to <=10.2.
 
-### op_global_planner node: Modify MainLoop conditions for replanning
-Modified the [main loop in op_global_planner](src/autoware/core_planning/op_global_planner/nodes/op_global_planner_core.cpp) to add the condition "m_iCurrentGoalIndex < m_GoalsPos.size()-1" for replanning.
+### op_global_planner node: Modified MainLoop replanning conditions
+Modified the [op_global_planner_core.cpp](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/core_planning/op_global_planner/nodes/op_global_planner_core.cpp) MainLoop to add the condition "m_iCurrentGoalIndex < m_GoalsPos.size()-1" for replanning.
 
-### op_planner BehaviorStateMachine: Modify state publishing when current path task is completed
-Modified the [BehaviorStateMachine in op_planner](src/autoware/common/op_planner/src/BehaviorStateMachine.cpp) to return the current state when there is no goal, otherwise set the previous goal as the current goal and publish the state as FORWARD.
+### op_planner BehaviorStateMachine: Modified state publishing logic when current task is completed
+Modified the [BehaviorStateMachine.cpp](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/op_planner/src/BehaviorStateMachine.cpp) to return the current state when there is no goal, otherwise set the previous goal as the current goal and publish the state as FORWARD.
 
-### GNSS info conversion object: Modify reference latitude and longitude, add transformation matrix
-Modified the [geo_pos_conv.cpp](src/autoware/common/gnss/src/geo_pos_conv.cpp) to set the latitude and longitude to the first frame of /gps/fix in the recorded bag and added the transformation matrix and translation vector.
+### GNSS conversion: Modified local latitude and longitude, added transformation matrix
+Modified the [geo_pos_conv.cpp](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/gnss/src/geo_pos_conv.cpp) set_plane method to set latitude and longitude to the first frame of /gps/fix from the recorded bag. Added rotation matrix and translation vector to conv_llh2xyz.
 
-### NDT localization node: Modify logic for resetting pose using GNSS
-Modified the [ndt_matching.cpp](src/autoware/core_perception/lidar_localizer/nodes/ndt_matching/ndt_matching.cpp) to use the current gnss pose for initial pose publishing when GNSS is enabled and ndt localization quality is poor. Changed the threshold for calling gnss to 1 and added an initialpose publisher.
+### NDT localization: Modified pose reset logic using GNSS
+Modified the [ndt_matching.cpp](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/core_perception/lidar_localizer/nodes/ndt_matching/ndt_matching.cpp) gnss_callback to use current gnss pose when GNSS is enabled and no initial pose is published or ndt quality is poor. Changed the threshold to 1 and added an initialpose_pub.
 
-### Point cloud tracking node: Modify subscribed topic
-Modified the [lidar_kf_contour_track_core.cpp](src/autoware/core_perception/lidar_kf_contour_track/nodes/lidar_kf_contour_track/lidar_kf_contour_track_core.cpp) to change the subscribed topic from /cloud_clusters to /detection/lidar_detector/cloud_clusters.
+### Point cloud tracking: Modified subscription topic
+Modified the [lidar_kf_contour_track_core.cpp](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/core_perception/lidar_kf_contour_track/nodes/lidar_kf_contour_track/lidar_kf_contour_track_core.cpp) to change the subscription topic from /cloud_clusters to /detection/lidar_detector/cloud_clusters.
 
-### Point cloud Euclidean clustering node: Add published information
-Modified the [lidar_euclidean_cluster_detect.cpp](src/autoware/core_perception/lidar_euclidean_cluster_detect/nodes/lidar_euclidean_cluster_detect/lidar_euclidean_cluster_detect.cpp) to add average point, state, and id to the published cluster information.
+### Euclidean clustering: Added publishing information
+Modified the [lidar_euclidean_cluster_detect.cpp](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/core_perception/lidar_euclidean_cluster_detect/nodes/lidar_euclidean_cluster_detect/lidar_euclidean_cluster_detect.cpp) publishCloudClusters method to add average point, state, and id to the published message.
