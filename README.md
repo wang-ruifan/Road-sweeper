@@ -64,7 +64,11 @@ mkdir -p road-sweeper.ws
 
 - 克隆源代码
 ```shell
-git clone -b main https://github.com/wang-ruifan/Road-sweeper.git
+git clone -b source https://github.com/wang-ruifan/Road-sweeper.git
+```
+将克隆得到的文件内的src文件夹下的所有文件复制到road-sweeper.ws文件夹下的src文件夹内
+```shell
+cp -r Road-sweeper/src/* road-sweeper.ws/src/
 ```
 
 - 安装rosdepc
