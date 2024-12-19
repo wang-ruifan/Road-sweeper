@@ -31,22 +31,25 @@
 
 请按照以下步骤安装和配置项目： 
 
-1.Jetson 刷机安装Ubuntu 18.04  
+#### Jetson 刷机安装Ubuntu 18.04  
 请参考[CSDN博客](https://blog.csdn.net/weixin_47606814/article/details/127841948?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522568955dfc76993359b335c02fcf6e43f%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=568955dfc76993359b335c02fcf6e43f&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-1-127841948-null-null.142^v100^pc_search_result_base8&utm_term=jetson%20xavier%20nx%E7%83%A7%E5%BD%95%E7%B3%BB%E7%BB%9F&spm=1018.2226.3001.4187)  
 注意：选择jetpack版本为4.x.x才是Ubuntu 18.04，同时只安装Jetson OS，并设置安装位置为nvme。
 
-2. 安装相关组件
-- 安装jtop，CUDA 10.2，cuDNN  
+####  安装相关组件
+1. 安装jtop，CUDA 10.2，cuDNN  
 请参考[CSDN博客](https://blog.csdn.net/a111222zw/article/details/120632906)
-- 安装TensorRT  
+
+2. 安装TensorRT  
 请参考[CSDN博客](https://blog.csdn.net/weixin_43541510/article/details/130796360)中的单独安装TensorRT部分的内容，注意TensorRT版本必须为7，否则编译Autoware时会报错
-- 安装ROS Melodic  
+
+3. 安装ROS Melodic  
 使用鱼香ROS一键安装  
 ```shell
 wget http://fishros.com/install -O fishros && . fishros
 ```
 选择1一键安装ROS，选择更换系统源，选择版本为Melodic(桌面版)
-- 安装Autoware编译系统依赖项  
+
+4. 安装Autoware编译系统依赖项  
 ```shell
 sudo apt update
 sudo apt install python3-pip
@@ -54,15 +57,15 @@ sudo apt install -y python-catkin-pkg python-rosdep ros-$ROS_DISTRO-catkin
 sudo apt install -y python3-pip python3-colcon-common-extensions python3-setuptools python3-vcstool
 pip3 install -U setuptools
 ```
-- 安装Eigen3.3.7  
+5. 安装Eigen3.3.7  
 请参考[CSDN博客](https://blog.csdn.net/reasonyuanrobot/article/details/114372363)
 
-- 创建路面清扫车工作空间
+6. 创建工作空间
 ```shell
 mkdir -p road-sweeper.ws
 ```
 
-- 克隆源代码
+7. 克隆源代码
 ```shell
 git clone -b source https://github.com/wang-ruifan/Road-sweeper.git
 ```
@@ -71,7 +74,7 @@ git clone -b source https://github.com/wang-ruifan/Road-sweeper.git
 cp -r Road-sweeper/src/* road-sweeper.ws/src/
 ```
 
-- 安装rosdepc
+8. 安装rosdepc
 使用鱼香ROS一键安装rosdepc  
 ```shell
 wget http://fishros.com/install -O fishros && . fishros
@@ -83,7 +86,7 @@ cd road-sweeper.ws
 rosdepc install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
 ```
 
-- 编译，安装
+9. 编译，安装
 ```shell
 AUTOWARE_COMPILE_WITH_CUDA=1 colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
@@ -102,6 +105,8 @@ colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-select xxx
 
 ### 使用Autoware命令转换至CAN  
 查看相关[使用说明](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autowarecmd_to_can/README.md)
+
+### 使用launch文件启动清扫车
 
 ## 使用Autoware源代码遇到的问题
 
