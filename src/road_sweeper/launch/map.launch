@@ -1,0 +1,21 @@
+<launch>
+	<!-- Set up parameters -->
+	<arg name="point_cloud_scene_num" default="noupdate" />
+ 	<arg name="point_cloud_path_pcd" default='"$(env HOME)/.autoware/data/points_map"' />
+
+	<arg name="vector_map_load_mode" default="directory" />
+	<arg name="vector_map_dir" default='"$(env HOME)/.autoware/data/map/vector_map"' />
+
+	<!-- Load Point Cloud Map -->
+ 	<node pkg="map_file" type="points_map_loader" name="points_map_loader" >
+  		<rosparam subst_value="true">
+    		area: $(arg point_cloud_scene_num)
+    		pcd_paths: [ $(arg point_cloud_path_pcd) ]
+  		</rosparam>
+ 	</node>
+
+	<node pkg="map_file" type="vector_map_loader" name="vector_map_loader" output="screen">
+    	<param name="load_mode" value="directory" />
+    	<param name="map_dir" value="$(env HOME)/.autoware/data/map/vector_map" />
+  </node>
+</launch>

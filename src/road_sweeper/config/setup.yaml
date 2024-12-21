@@ -1,0 +1,11 @@
+# Tf parameters for the road sweeper
+tf_x: 1
+tf_y: 0
+tf_z: 0.9
+tf_yaw: -1.57
+tf_pitch: 0
+tf_roll: 0
+
+localizer: velodyne
+
+use_sim_time: false
