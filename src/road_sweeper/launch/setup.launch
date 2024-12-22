@@ -1,4 +1,7 @@
 <launch>
+	<!-- Set sim time -->
+	<param name="/use_sim_time" value="true" />
+
 	<!-- Load setup.yaml -->
 	<rosparam command="load" file="$(find road_sweeper)/config/setup.yaml"/>
 

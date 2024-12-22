@@ -1,10 +1,20 @@
 <launch>
+	<!-- Setup TF tree of world to map -->
+	<node pkg="tf" type="static_transform_publisher" name="base_link_to_velodyne">
+		<arg name="x" value="0.0" />
+		<arg name="y" value="0.0" />
+		<arg name="z" value="0.0" />
+		<arg name="yaw" value="0.0" />
+		<arg name="pitch" value="0.0" />
+		<arg name="roll" value="0.0" />
+		<arg name="frame_id" value="/world" />
+		<arg name="child_frame_id" value="/map" />
+		<arg name="period_in_ms" value="10" />
+	</node>
+
 	<!-- Set up parameters -->
 	<arg name="point_cloud_scene_num" default="noupdate" />
- 	<arg name="point_cloud_path_pcd" default='"$(env HOME)/.autoware/data/points_map"' />
-
-	<arg name="vector_map_load_mode" default="directory" />
-	<arg name="vector_map_dir" default='"$(env HOME)/.autoware/data/map/vector_map"' />
+ 	<arg name="point_cloud_path_pcd" default='"$(env HOME)/.roadsweeper/data/points_map"' />
 
 	<!-- Load Point Cloud Map -->
  	<node pkg="map_file" type="points_map_loader" name="points_map_loader" >
@@ -14,8 +24,9 @@
   		</rosparam>
  	</node>
 
+	<!-- Load Vector Map -->
 	<node pkg="map_file" type="vector_map_loader" name="vector_map_loader" output="screen">
     	<param name="load_mode" value="directory" />
-    	<param name="map_dir" value="$(env HOME)/.autoware/data/map/vector_map" />
+    	<param name="map_dir" value="$(env HOME)/.roadsweeper/data/map/vector_map" />
   </node>
 </launch>
