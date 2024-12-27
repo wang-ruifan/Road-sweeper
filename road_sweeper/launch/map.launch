@@ -1,32 +1,22 @@
 <launch>
-	<!-- Setup TF tree of world to map -->
-	<node pkg="tf" type="static_transform_publisher" name="base_link_to_velodyne">
-		<arg name="x" value="0.0" />
-		<arg name="y" value="0.0" />
-		<arg name="z" value="0.0" />
-		<arg name="yaw" value="0.0" />
-		<arg name="pitch" value="0.0" />
-		<arg name="roll" value="0.0" />
-		<arg name="frame_id" value="/world" />
-		<arg name="child_frame_id" value="/map" />
-		<arg name="period_in_ms" value="10" />
-	</node>
+ <!-- Setup TF tree of world to map -->
+ <node pkg="tf" type="static_transform_publisher" name="world_to_map" args="0 0 0 0 0 0 /world /map 10" />
 
-	<!-- Set up parameters -->
-	<arg name="point_cloud_scene_num" default="noupdate" />
- 	<arg name="point_cloud_path_pcd" default='"$(env HOME)/.roadsweeper/data/points_map"' />
+ <!-- Set up parameters -->
+ <arg name="point_cloud_scene_num" default="noupdate" />
+  <arg name="point_cloud_path_pcd" default="$(env HOME)/road_sweeper_data/points_map/map.pcd" />
+ 
+ <!-- Load Point Cloud Map -->
+ <node pkg="map_file" type="points_map_loader" name="points_map_loader" >
+  <rosparam subst_value="true">
+   area: $(arg point_cloud_scene_num)
+   pcd_paths: [$(arg point_cloud_path_pcd)]
+  </rosparam>
+ </node>
 
-	<!-- Load Point Cloud Map -->
- 	<node pkg="map_file" type="points_map_loader" name="points_map_loader" >
-  		<rosparam subst_value="true">
-    		area: $(arg point_cloud_scene_num)
-    		pcd_paths: [ $(arg point_cloud_path_pcd) ]
-  		</rosparam>
- 	</node>
-
-	<!-- Load Vector Map -->
-	<node pkg="map_file" type="vector_map_loader" name="vector_map_loader" output="screen">
-    	<param name="load_mode" value="directory" />
-    	<param name="map_dir" value="$(env HOME)/.roadsweeper/data/map/vector_map" />
-  </node>
+ <!-- Load Vector Map -->
+ <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" output="screen">
+  <param name="load_mode" value="directory" />
+  <param name="map_dir" value="$(env HOME)/road_sweeper_data/map/vector_map" />
+ </node>
 </launch>

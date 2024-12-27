@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>road_sweeper</name>
+  <version>0.0.1</version>
+  <description>The road_sweeper package</description>
+  <maintainer email="wangruifan2003@qq.com">wang-ruifan</maintainer>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+</package>
