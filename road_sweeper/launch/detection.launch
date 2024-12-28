@@ -1,0 +1,30 @@
+<launch>
+    <!-- Lidar euclidean cluster -->
+    <include file="$(find core_perception)/lidar_euclidean_cluster_detect/launch/lidar_euclidean_cluster_detect.launch" >
+        <arg name="remove_points_upto" value="0.0" />
+        <arg name="use_gpu" value="false" />
+        <arg name="use_multiple_thres" value="false"/>
+        <arg name="clustering_ranges" value="[15,30,45,60]"/><!-- Distances to segment pointcloud -->
+        <arg name="clustering_distances" value="[0.5,1.1,1.6,2.1,2.6]"/><!-- Euclidean Clustering threshold distance for each segment -->
+    </include>
+
+    <!-- Lidar kf contour track-->
+    <include file="$(find core_perception)/lidar_kf_contour_track/launch/lidar_kf_contour_track.launch" >
+        <arg name="vehicle_width" value="1.85" />
+        <arg name="vehicle_length" value="4.2" />
+        <arg name="min_object_size" value="0.1" />
+        <arg name="max_object_size" value="30.0" />
+        <arg name="polygon_quarters" value="16" />
+        <arg name="polygon_resolution" value="0.5" />
+        <arg name="tracking_type" value="2" />
+        <arg name="max_association_distance" value="4.5" />
+        <arg name="max_association_size_diff" value="2.0" />
+        <arg name="max_remeber_time" value="3" />
+        <arg name="trust_counter" value="4" />
+        <arg name="enableSimulationMode" value="false" />
+        <arg name="enableStepByStepMode" value="false" />
+        <arg name="vector_map_filter_distance" value="2.0" />
+        <arg name="enableLogging" value="false" />
+    </include>
+
+</launch>

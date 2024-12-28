@@ -27,4 +27,6 @@
         <arg name="imu_topic" value="/imu_raw" />
     </include>
 
+    <!-- Vel pose connect -->
+    <include file="$(find autoware_connector)/launch/vel_pose_connect.launch" />
 </launch>
