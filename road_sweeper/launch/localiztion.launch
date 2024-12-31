@@ -4,16 +4,19 @@
     
     <!-- Arguments' name        Arguments' value            Arguments' range/options -->
     
-    <!-- Voxel grid filter -->
+    <!-- ==== Voxel grid filter ==== -->
+    <!-- Launch arguments -->
     <arg name="sync" default="false" />
     <arg name="node_name" default="voxel_grid_filter" />
     <arg name="points_topic" default="/points_raw" />
     <arg name="output_log" default="false" />
 
+    <!-- Topic /config/voxel_grid_filter  arguments -->
     <arg name="voxel_leaf_size" default="2.0" />            <!-- 0 ~ 10 -->
     <arg name="measurement_range" default="200.0" />        <!-- 0 ~ 200 -->
 
-    <!-- Ring ground filter -->
+    <!-- ==== Ring ground filter ==== -->
+    <!-- Launch arguments -->
     <arg name="point_topic" default="/filtered_points" />   <!-- /points_raw, /filtered_points -->
     <arg name="remove_floor" default="true" />
     <arg name="sensor_model" default="16" />                <!-- 16, 32, 64 -->
@@ -23,9 +26,48 @@
     <arg name="no_ground_point_topic" default="/points_no_ground" />
     <arg name="ground_point_topic" default="/points_ground" />
 
+    <!-- ==== NDT matching ==== -->
+    <!-- Launch arguments -->
+    <arg name="method_type" default="0" />                  <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
+    <arg name="use_gnss" default="1" />                     <!-- 0, 1 -->
+    <arg name="use_odom" default="false" />
+    <arg name="use_imu" default="false" />
+    <arg name="imu_upside_down" default="false" />
+    <arg name="imu_topic" default="/imu_raw" />
+    <arg name="queue_size" default="1" />
+    <arg name="offset" default="linear" />
+    <arg name="get_height" default="false" />
+    <arg name="use_local_transform" default="false" />
+    <arg name="output_log_data" default="false" />
+    <arg name="gnss_reinit_fitness" default="500.0" />
+
+    <!-- Topic /config/ndt  arguments -->
+    <arg name="init_pos_gnss" default="1" />                <!-- init_pos=0, gnss=1 -->
+    <!-- init_pos -->
+    <arg name="x" default="0.0" />
+    <arg name="y" default="0.0" />
+    <arg name="z" default="0.0" />
+    <arg name="roll" default="0.0" />
+    <arg name="pitch" default="0.0" />
+    <arg name="yaw" default="0.0" />
+
+    <arg name="use_predict_pose" default="0" />
+    <arg name="error_threshold" default="1.0" />
+    <arg name="resolution" default="1.0" />
+    <arg name="step_size" default="0.1" />
+    <arg name="trans_epsilon" default="0.01" />
+    <arg name="max_iterations" default="30" />
+    
+    <!-- ==== NDT matching monitor ==== -->
+    <arg name="iteration_threshold_warn" default="10" />
+    <arg name="iteration_threshold_stop" default="32" />
+    <arg name="score_delta_threshold" default="14.0" />
+    <arg name="min_stable_samples" default="30.0" />
+    <arg name="fatal_time_threshold" default="2.0" />
+
     <!-- =============== Nodes start =============== -->
 
-    <!-- Voxel grid filter -->
+    <!-- ==== Voxel grid filter ==== -->
     <include file="$(find points_downsampler)/launch/points_downsample.launch" >
         <arg name="sync" value="$(arg sync)" />
         <arg name="points_topic" value="$(arg points_topic)" />
@@ -33,7 +75,7 @@
         <arg name="measurement_range" value="$(arg measurement_range)" />
     </include>
 
-    <!-- Ring ground filter -->
+    <!-- ==== Ring ground filter ==== -->
     <include file="$(find points_preprocessor)/launch/ring_ground_filter.launch" >
         <arg name="point_topic" value="$(arg point_topic)" />
         <arg name="remove_floor" value="$(arg remove_floor)" />
@@ -45,8 +87,35 @@
         <arg name="ground_point_topic" value="$(arg ground_point_topic)" />
     </include>
 
-    <!-- Fix to TF pose -->
+    <!-- ==== Fix to TF pose ==== -->
     <include file="$(find gnss_localizer)/launch/fix2tfpose.launch" arg="plane" value="7" />
+
+    <!-- ==== NDT matching ==== -->
+    <include file="$(find lidar_localizer)/launch/ndt_matching.launch" >
+        <arg name="method_type" value="$(arg method_type)" />
+        <arg name="use_gnss" value="$(arg use_gnss)" />
+        <arg name="use_odom" value="$(arg use_odom)" />
+        <arg name="use_imu" value="$(arg use_imu)" />
+        <arg name="imu_upside_down" value="$(arg imu_upside_down)" />
+        <arg name="imu_topic" value="$(arg imu_topic)" />
+        <arg name="queue_size" value="$(arg queue_size)" />
+        <arg name="offset" value="$(arg offset)" />
+        <arg name="get_height" value="$(arg get_height)" />
+        <arg name="use_local_transform" value="$(arg use_local_transform)" />
+        <arg name="output_log_data" value="$(arg output_log_data)" />
+        <arg name="gnss_reinit_fitness" value="$(arg gnss_reinit_fitness)" />
+    </include>
+
+    <!-- ==== NDT matching monitor ==== -->
+    <include file="$(find lidar_localizer)/launch/ndt_matching_monitor.launch" >
+        <arg name="iteration_threshold_warn" value="$(arg iteration_threshold_warn)" />
+        <arg name="iteration_threshold_stop" value="$(arg iteration_threshold_stop)" />
+        <arg name="score_delta_threshold" value="$(arg score_delta_threshold)" />
+        <arg name="min_stable_samples" value="$(arg min_stable_samples)" />
+        <arg name="fatal_time_threshold" value="$(arg fatal_time_threshold)" />
+
+    <!-- ==== Vel pose connect ==== -->
+    <include file="$(find autoware_connector)/launch/vel_pose_connect.launch" />
 
     <!-- =============== Config set =============== -->
 
@@ -55,4 +124,7 @@
     
     <!-- Publish ring ground filter config -->
     <node pkg="rostopic" type="rostopic" name="config_ring_ground_filter" args="pub --latch --once /config/ring_ground_filter autoware_config_msgs/ConfigRingGroundFilter '{sensor_model: $(arg sensor_model), sensor_height: $(arg sensor_height), max_slope: $(arg max_slope), vertical_thres: $(arg vertical_thres), no_ground_point_topic: $(arg no_ground_point_topic), ground_point_topic: $(arg ground_point_topic)}'" />
+
+    <!-- Publish NDT matching config -->
+    <node pkg="rostopic" type="rostopic" name="config_ndt_matching" args="pub --latch --once /config/ndt autoware_config_msgs/ConfigNDT '{init_pos_gnss: $(arg init_pos_gnss), x: $(arg x), y: $(arg y), z: $(arg z), roll: $(arg roll), pitch: $(arg pitch), yaw: $(arg yaw), use_predict_pose: $(arg use_predict_pose), error_threshold: $(arg error_threshold), resolution: $(arg resolution), step_size: $(arg step_size), trans_epsilon: $(arg trans_epsilon), max_iterations: $(arg max_iterations)}'" />
 </launch>
