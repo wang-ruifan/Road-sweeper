@@ -1,32 +1,58 @@
 <launch>
-    <!-- Points downsample -->
-    <include file="$(find points_downsampler)/launch/points_downsample.launch" />
+
+    <!-- =============== Config arguments =============== -->
+    
+    <!-- Arguments' name        Arguments' value            Arguments' range/options -->
+    
+    <!-- Voxel grid filter -->
+    <arg name="sync" default="false" />
+    <arg name="node_name" default="voxel_grid_filter" />
+    <arg name="points_topic" default="/points_raw" />
+    <arg name="output_log" default="false" />
+
+    <arg name="voxel_leaf_size" default="2.0" />            <!-- 0 ~ 10 -->
+    <arg name="measurement_range" default="200.0" />        <!-- 0 ~ 200 -->
+
+    <!-- Ring ground filter -->
+    <arg name="point_topic" default="/filtered_points" />   <!-- /points_raw, /filtered_points -->
+    <arg name="remove_floor" default="true" />
+    <arg name="sensor_model" default="16" />                <!-- 16, 32, 64 -->
+    <arg name="sensor_height" default="1.85" />             <!-- -3.0 ~ 3.0 -->
+    <arg name="max_slope" default="10.0" />                 <!-- 0.0 ~ 40.0 -->
+    <arg name="vertical_thres" default="0.08" />            <!-- 0.0 ~ 3.0 -->
+    <arg name="no_ground_point_topic" default="/points_no_ground" />
+    <arg name="ground_point_topic" default="/points_ground" />
+
+    <!-- =============== Nodes start =============== -->
+
+    <!-- Voxel grid filter -->
+    <include file="$(find points_downsampler)/launch/points_downsample.launch" >
+        <arg name="sync" value="$(arg sync)" />
+        <arg name="points_topic" value="$(arg points_topic)" />
+        <arg name="output_log" value="$(arg output_log)" />
+        <arg name="measurement_range" value="$(arg measurement_range)" />
+    </include>
 
     <!-- Ring ground filter -->
     <include file="$(find points_preprocessor)/launch/ring_ground_filter.launch" >
-        <arg name="point_topic" value="/points_downsampled" />
-        <arg name="remove_floor" value="true" />
-        <arg name="sensor_model" value="16" />
-        <arg name="sensor_height" value="0.9" />
-        <arg name="max_slope" value="10.0" />
-        <arg name="vertical_thres" value="0.08" />
-        <arg name="no_ground_point_topic" value="/points_no_ground" />
-        <arg name="ground_point_topic" value="/points_ground" />
+        <arg name="point_topic" value="$(arg point_topic)" />
+        <arg name="remove_floor" value="$(arg remove_floor)" />
+        <arg name="sensor_model" value="$(arg sensor_model)" />
+        <arg name="sensor_height" value="$(arg sensor_height)" />
+        <arg name="max_slope" value="$(arg max_slope)" />
+        <arg name="vertical_thres" value="$(arg vertical_thres)" />
+        <arg name="no_ground_point_topic" value="$(arg no_ground_point_topic)" />
+        <arg name="ground_point_topic" value="$(arg ground_point_topic)" />
     </include>
 
     <!-- Fix to TF pose -->
     <include file="$(find gnss_localizer)/launch/fix2tfpose.launch" arg="plane" value="7" />
 
-    <!-- NDT matching -->
-    <include file="$(find lidar_localizer)/launch/ndt_matching.launch" >
-        <arg name="method_type" value="1" />    <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
-        <arg name="use_gnss" value="1" />
-        <arg name="gnss_reinit_fitness" value="1.0" />
-        <arg name="use_imu" value="false" />
-        <arg name="imu_upside_down" value="false" />
-        <arg name="imu_topic" value="/imu_raw" />
-    </include>
+    <!-- =============== Config set =============== -->
 
-    <!-- Vel pose connect -->
-    <include file="$(find autoware_connector)/launch/vel_pose_connect.launch" />
+    <!-- Publish voxel grid filter config -->
+    <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter" args="pub --latch --once /config/voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter '{voxel_leaf_size: $(arg voxel_leaf_size), measurement_range: $(arg measurement_range)}'" />
+    
+    <!-- Publish ring ground filter config -->
+    <node pkg="rostopic" type="rostopic" name="config_ring_ground_filter" args="pub --latch --once /config/ring_ground_filter autoware_config_msgs/ConfigRingGroundFilter '{sensor_model: $(arg sensor_model), sensor_height: $(arg sensor_height), max_slope: $(arg max_slope), vertical_thres: $(arg vertical_thres), no_ground_point_topic: $(arg no_ground_point_topic), ground_point_topic: $(arg ground_point_topic)}'" />
 </launch>
