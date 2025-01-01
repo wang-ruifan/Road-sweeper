@@ -4,7 +4,7 @@
 [Click Me!](#road-sweeper-project)  
 
 ## 项目简介
-- 这是一个大型路面清扫车的项目，基于Ubuntu 18.04，ROS Melodic，Autoware1.14。
+- 这是一个小型路面清扫车的项目，基于Ubuntu 18.04，ROS Melodic，Autoware1.14。
 - 使用的控制板为NVIDIA Jetson Xavier NX，底盘为线控底盘，使用CAN进行通信。
 - 本仓库包含了修改后的Autoware代码、Autoware的底盘控制指令与CAN进行对接的包，激光雷达和IMU/GNSS驱动包，地图文件等。
 ### 此仓库为本人记录、留存用。不回复issue，不对代码可用性做保证
