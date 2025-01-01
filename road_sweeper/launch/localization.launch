@@ -93,7 +93,9 @@
     </include>
 
     <!-- ==== Fix to TF pose ==== -->
-    <include file="$(find gnss_localizer)/launch/fix2tfpose.launch" arg="plane" value="7" />
+    <include file="$(find gnss_localizer)/launch/fix2tfpose.launch">
+        <arg name="plane" value="7" />
+    </include>
 
     <!-- ==== NDT matching ==== -->
     <include file="$(find lidar_localizer)/launch/ndt_matching.launch" >
@@ -118,6 +120,7 @@
         <arg name="score_delta_threshold" value="$(arg score_delta_threshold)" />
         <arg name="min_stable_samples" value="$(arg min_stable_samples)" />
         <arg name="fatal_time_threshold" value="$(arg fatal_time_threshold)" />
+    </include>
 
     <!-- ==== Vel pose connect ==== -->
     <include file="$(find autoware_connector)/launch/vel_pose_connect.launch" >
@@ -132,7 +135,7 @@
     <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter" args="pub --latch --once /config/voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter '{voxel_leaf_size: $(arg voxel_leaf_size), measurement_range: $(arg measurement_range)}'" />
     
     <!-- Publish ring ground filter config -->
-    <node pkg="rostopic" type="rostopic" name="config_ring_ground_filter" args="pub --latch --once /config/ring_ground_filter autoware_config_msgs/ConfigRingGroundFilter '{sensor_model: $(arg sensor_model), sensor_height: $(arg sensor_height), max_slope: $(arg max_slope), vertical_thres: $(arg vertical_thres), no_ground_point_topic: $(arg no_ground_point_topic), ground_point_topic: $(arg ground_point_topic)}'" />
+    <node pkg="rostopic" type="rostopic" name="config_ring_ground_filter" args="pub --latch --once /config/ring_ground_filter autoware_config_msgs/ConfigRingGroundFilter '{sensor_model: $(arg sensor_model), sensor_height: $(arg sensor_height), max_slope: $(arg max_slope), vertical_thres: $(arg vertical_thres)}'" />
 
     <!-- Publish NDT matching config -->
     <node pkg="rostopic" type="rostopic" name="config_ndt_matching" args="pub --latch --once /config/ndt autoware_config_msgs/ConfigNDT '{init_pos_gnss: $(arg init_pos_gnss), x: $(arg x), y: $(arg y), z: $(arg z), roll: $(arg roll), pitch: $(arg pitch), yaw: $(arg yaw), use_predict_pose: $(arg use_predict_pose), error_threshold: $(arg error_threshold), resolution: $(arg resolution), step_size: $(arg step_size), trans_epsilon: $(arg trans_epsilon), max_iterations: $(arg max_iterations)}'" />
