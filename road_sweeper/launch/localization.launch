@@ -2,7 +2,7 @@
 
     <!-- =============== Config arguments =============== -->
     
-    <!-- Arguments' name        Arguments' value            Arguments' range/options -->
+    <!-- Arguments' name        Arguments' value            Arguments' range/options                    Description -->
     
     <!-- ==== Voxel grid filter ==== -->
     <!-- Launch arguments -->
@@ -12,37 +12,37 @@
     <arg name="output_log" default="false" />
 
     <!-- Topic /config/voxel_grid_filter  arguments -->
-    <arg name="voxel_leaf_size" default="2.0" />            <!-- 0 ~ 10 -->
-    <arg name="measurement_range" default="200.0" />        <!-- 0 ~ 200 -->
+    <arg name="voxel_leaf_size" default="2.0" />            <!-- 0 ~ 10 -->                             <!-- 滤波降采样的体素大小 -->
+    <arg name="measurement_range" default="200.0" />        <!-- 0 ~ 200 -->                            <!-- 滤波降采样的范围，设定为激光雷达的最大测量距离 -->
 
     <!-- ==== Ring ground filter ==== -->
     <!-- Launch arguments -->
     <arg name="point_topic" default="/points_raw" />        <!-- /points_raw, /filtered_points -->
-    <arg name="remove_floor" default="true" />
-    <arg name="sensor_model" default="16" />                <!-- 16, 32, 64 -->
-    <arg name="sensor_height" default="1.85" />             <!-- -3.0 ~ 3.0 -->
-    <arg name="max_slope" default="10.0" />                 <!-- 0.0 ~ 40.0 -->
-    <arg name="vertical_thres" default="0.08" />            <!-- 0.0 ~ 3.0 -->
-    <arg name="no_ground_point_topic" default="/points_no_ground" />
-    <arg name="ground_point_topic" default="/points_ground" />
+    <arg name="remove_floor" default="true" />              <!-- true, false -->                        <!-- 是否移除地面 -->
+    <arg name="sensor_model" default="16" />                <!-- 16, 32, 64 -->                         <!-- 激光雷达的线数 -->
+    <arg name="sensor_height" default="1.85" />             <!-- -3.0 ~ 3.0 -->                         <!-- 激光雷达的安装高度 -->
+    <arg name="max_slope" default="10.0" />                 <!-- 0.0 ~ 40.0 -->                         <!-- 地面的最大坡度 -->
+    <arg name="vertical_thres" default="0.08" />            <!-- 0.0 ~ 3.0 -->                          <!-- 地面的垂直阈值 -->
+    <arg name="no_ground_point_topic" default="/points_no_ground" />                                    <!-- 移除地面后的点云话题 -->
+    <arg name="ground_point_topic" default="/points_ground" />                                          <!-- 地面点云话题 -->
 
     <!-- ==== NDT matching ==== -->
     <!-- Launch arguments -->
     <arg name="method_type" default="0" />                  <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
-    <arg name="use_gnss" default="1" />                     <!-- 0, 1 -->
-    <arg name="use_odom" default="false" />
-    <arg name="use_imu" default="false" />
-    <arg name="imu_upside_down" default="false" />
-    <arg name="imu_topic" default="/imu_raw" />
+    <arg name="use_gnss" default="1" />                     <!-- 0, 1 -->                               <!-- 是否使用GNSS，1：使用、0：不使用 -->
+    <arg name="use_odom" default="false" />                 <!-- false, true -->                        <!-- 是否使用里程计 -->
+    <arg name="use_imu" default="false" />                  <!-- false, true -->                        <!-- 是否使用IMU -->
+    <arg name="imu_upside_down" default="false" />          <!-- false, true -->                        <!-- IMU是否倒置 -->
+    <arg name="imu_topic" default="/imu_raw" />             <!-- /imu_raw, /imu/data -->                <!-- 订阅IMU数据的话题名 -->
     <arg name="queue_size" default="1" />
     <arg name="offset" default="linear" />
-    <arg name="get_height" default="false" />
+    <arg name="get_height" default="false" />               <!-- false, true -->                        <!-- 是否从GNSS数据中获取高度 -->
     <arg name="use_local_transform" default="false" />
-    <arg name="output_log_data" default="false" />
-    <arg name="gnss_reinit_fitness" default="1.0" />
+    <arg name="output_log_data" default="false" />          <!-- false, true -->                        <!-- 是否输出日志 -->
+    <arg name="gnss_reinit_fitness" default="1.0" />        <!-- 0.0 ~ 1.0 -->                          <!-- 使用GNSS位置重新初始化的适应度值 -->
 
     <!-- Topic /config/ndt  arguments -->
-    <arg name="init_pos_gnss" default="1" />                <!-- init_pos=0, gnss=1 -->
+    <arg name="init_pos_gnss" default="1" />                <!-- init_pos=0, gnss=1 -->                 <!-- 初始化位置的方式 -->
     <!-- init_pos -->
     <arg name="x" default="0.0" />
     <arg name="y" default="0.0" />
@@ -51,12 +51,12 @@
     <arg name="pitch" default="0.0" />
     <arg name="yaw" default="0.0" />
 
-    <arg name="use_predict_pose" default="1" />             <!-- 0, 1 -->
-    <arg name="error_threshold" default="1.0" />            <!-- 0.0 ~ 10 -->
-    <arg name="resolution" default="1.0" />                 <!-- 0.0 ~ 10 -->
-    <arg name="step_size" default="0.5" />                  <!-- 0.0 ~ 1.0 -->
-    <arg name="trans_epsilon" default="0.01" />             <!-- 0.0 ~ 0.1 -->
-    <arg name="max_iterations" default="30" />              <!-- 1 ~ 300 -->
+    <arg name="use_predict_pose" default="1" />             <!-- 0, 1 -->                               <!-- 是否使用预测姿态 -->
+    <arg name="error_threshold" default="1.0" />            <!-- 0.0 ~ 10 -->                           <!-- 误差阈值 -->
+    <arg name="resolution" default="1.0" />                 <!-- 0.0 ~ 10 -->                           <!-- 分辨率 -->
+    <arg name="step_size" default="0.5" />                  <!-- 0.0 ~ 1.0 -->                          <!-- 步长 -->
+    <arg name="trans_epsilon" default="0.01" />             <!-- 0.0 ~ 0.1 -->                          <!-- 转换误差 -->
+    <arg name="max_iterations" default="30" />              <!-- 1 ~ 300 -->                            <!-- 最大迭代次数 -->
     
     <!-- ==== NDT matching monitor ==== -->
     <arg name="iteration_threshold_warn" default="10" />

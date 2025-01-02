@@ -1,22 +1,22 @@
 <launch>
- <!-- Setup TF tree of world to map -->
- <node pkg="tf" type="static_transform_publisher" name="world_to_map" args="0 0 0 0 0 0 /world /map 10" />
+    <!-- Setup TF tree of world to map -->
+    <node pkg="tf" type="static_transform_publisher" name="world_to_map" args="0 0 0 0 0 0 /world /map 10" />
 
- <!-- Set up parameters -->
- <arg name="point_cloud_scene_num" default="noupdate" />
-  <arg name="point_cloud_path_pcd" default="$(env HOME)/road_sweeper_data/Points_Map/map.pcd" />
+    <!-- Set up parameters -->
+    <arg name="point_cloud_scene_num" default="noupdate" />
+    <arg name="point_cloud_path_pcd" default="$(env HOME)/road_sweeper_data/Points_Map/map.pcd" />
  
- <!-- Load Point Cloud Map -->
- <node pkg="map_file" type="points_map_loader" name="points_map_loader" >
-  <rosparam subst_value="true">
-   area: $(arg point_cloud_scene_num)
-   pcd_paths: [$(arg point_cloud_path_pcd)]
-  </rosparam>
- </node>
+    <!-- Load Point Cloud Map -->
+    <node pkg="map_file" type="points_map_loader" name="points_map_loader" >
+        <rosparam subst_value="true">
+            area: $(arg point_cloud_scene_num)
+            pcd_paths: [$(arg point_cloud_path_pcd)]
+        </rosparam>
+    </node>
 
- <!-- Load Vector Map -->
- <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" output="screen">
-  <param name="load_mode" value="directory" />
-  <param name="map_dir" value="$(env HOME)/road_sweeper_data/Vector_Map" />
- </node>
+    <!-- Load Vector Map -->
+    <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" output="screen">
+        <param name="load_mode" value="directory" />
+        <param name="map_dir" value="$(env HOME)/road_sweeper_data/Vector_Map" />
+    </node>
 </launch>

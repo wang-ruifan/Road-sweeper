@@ -1,32 +1,32 @@
 <launch>
-  <!-- =============== Config arguments =============== -->
-  
-  <!-- Arguments' name        Arguments' value			Arguments' range/options -->
-  
-  <!-- ==== OpenPlanner Global Planner ==== -->
-  <arg name="enableLaneChange" default="false"/>
-  <arg name="enableReplan" default="true"/>
-  <arg name="enableSmoothing" default="true"/>
-  <arg name="enableRvizInput" default="false"/>
-  <arg name="pathDensity" default="0.75"/>				<!-- 0.01 ~ 5.0 -->
-  <arg name="velocitySource" default="1"/> 				<!-- Odometry=0, Autoware=1, car_info=2 -->
-  
-  <arg name="mapSource" default="0"/> 					<!-- Autoware=0, Vector Map Folder=1, kml file=2 -->
-  <arg name="mapFileName" default=""/>
-  <arg name="enableDynamicMapUpdate" default="false"/>
+    <!-- =============== Config arguments =============== -->
+    
+    <!-- Arguments' name        Arguments' value            Arguments' range/options            Description -->
+    
+    <!-- ==== OpenPlanner Global Planner ==== -->
+    <arg name="enableLaneChange" default="false"/>          <!-- true, false -->                <!-- 是否允许变道 -->
+    <arg name="enableReplan" default="true"/>               <!-- true, false -->                <!-- 是否允许到达目标位置之后重新对新目标进行路径规划 -->
+    <arg name="enableSmoothing" default="true"/>            <!-- true, false -->                <!-- 是否允许平滑路径 -->
+    <arg name="enableRvizInput" default="false"/>           <!-- true, false -->                <!-- 是否允许通过Rviz输入目标位置 -->
+    <arg name="pathDensity" default="0.75"/>                <!-- 0.01 ~ 5.0 -->                 <!-- 生成的路径点之间的间隔 -->
+    <arg name="velocitySource" default="1"/>                 <!-- Odometry=0, Autoware=1, car_info=2 -->
+    
+    <arg name="mapSource" default="0"/>                     <!-- Autoware=0, Vector Map Folder=1, kml file=2 -->
+    <arg name="mapFileName" default=""/>
+    <arg name="enableDynamicMapUpdate" default="false"/>
 
-  <!-- =============== Nodes start =============== -->
+    <!-- =============== Nodes start =============== -->
 
-  <!-- ==== OpenPlanner Global Planner ==== -->
-  <include file="$(find op_global_planner)/launch/op_global_planner.launch">
-    <arg name="pathDensity" value="$(arg pathDensity)"/>
-    <arg name="enableSmoothing" value="$(arg enableSmoothing)"/>
-    <arg name="enableLaneChange" value="$(arg enableLaneChange)"/>
-    <arg name="enableRvizInput" value="$(arg enableRvizInput)"/>
-    <arg name="enableReplan" value="$(arg enableReplan)"/>
-    <arg name="velocitySource" value="$(arg velocitySource)"/>
-    <arg name="mapSource" value="$(arg mapSource)"/>
-    <arg name="mapFileName" value="$(arg mapFileName)"/>
-    <arg name="enableDynamicMapUpdate" value="$(arg enableDynamicMapUpdate)"/>
-  </include>
+    <!-- ==== OpenPlanner Global Planner ==== -->
+    <include file="$(find op_global_planner)/launch/op_global_planner.launch">
+        <arg name="pathDensity" value="$(arg pathDensity)"/>
+        <arg name="enableSmoothing" value="$(arg enableSmoothing)"/>
+        <arg name="enableLaneChange" value="$(arg enableLaneChange)"/>
+        <arg name="enableRvizInput" value="$(arg enableRvizInput)"/>
+        <arg name="enableReplan" value="$(arg enableReplan)"/>
+        <arg name="velocitySource" value="$(arg velocitySource)"/>
+        <arg name="mapSource" value="$(arg mapSource)"/>
+        <arg name="mapFileName" value="$(arg mapFileName)"/>
+        <arg name="enableDynamicMapUpdate" value="$(arg enableDynamicMapUpdate)"/>
+    </include>
 </launch>

@@ -1,95 +1,95 @@
 <launch>
-  <!-- =============== Config arguments =============== -->
-  
-  <!-- Arguments' name        Arguments' value                  Arguments' range/options -->
-  
-  <!-- ==== Lidar Euclidean Cluster Detect ==== -->
-  <arg name="use_gpu" default="false"/>
-  <arg name="output_frame" default="map"/>
-  <arg name="pose_estimation" default="true"/>
-  <arg name="downsample_cloud" default="false"/>
-  <arg name="points_node" default="/points_raw"/>
-  <arg name="leaf_size" default="0.1"/>                         <!-- 0.0 ~ 1.0 -->
-  <arg name="cluster_size_min" default="20"/>                   <!-- 1 ~ 100000 -->
-  <arg name="cluster_size_max" default="100000"/>               <!-- 0 ~ 200000 -->
-  <arg name="clustering_distance" default="0.75"/>              <!-- 0.0 ~ 10.0 -->
-  <arg name="clip_min_height" default="-1.3"/>                  <!-- -5.0 ~ 5.0 -->
-  <arg name="clip_max_height" default="0.5"/>                   <!-- 0.0 ~ 5.0 -->
-  <arg name="use_vector_map" default="false"/>
-  <arg name="wayarea_gridmap_layer" default="grid_map_wayarea"/>
-  <arg name="remove_points_upto" default="0.0"/>                <!-- 0.0 ~ 2.5 -->
-  <arg name="keep_lanes" default="false"/>
-  <arg name="keep_lane_left_distance" default="5"/>             <!-- 0 ~ 100 -->
-  <arg name="keep_lane_right_distance" default="5"/>            <!-- 0 ~ 100 -->
-  <arg name="cluster_merge_threshold" default="1.5"/>           <!-- 0.0 ~ 10.0 -->
-  <arg name="use_multiple_thres" default="false"/>
-  <arg name="clustering_ranges" default="[15,30,45,60]"/>
-  <arg name="clustering_distances" default="[0.5,1.1,1.6,2.1,2.6]"/>
-  <arg name="remove_ground" default="false"/>
-  <arg name="use_diffnormals" default="false"/>
+    <!-- =============== Config arguments =============== -->
+    
+    <!-- Arguments' name        Arguments' value                Arguments' range/options                Description -->
+    
+    <!-- ==== Lidar Euclidean Cluster Detect ==== -->
+    <arg name="use_gpu" default="false"/>
+    <arg name="output_frame" default="map"/>                    <!-- map, velodyne -->                  <!-- 聚类结果输出坐标系 -->
+    <arg name="pose_estimation" default="true"/>                <!-- true, false -->                    <!-- 是否进行位姿估计 -->
+    <arg name="downsample_cloud" default="false"/>              <!-- true, false -->                    <!-- 是否对点云进行降采样 -->
+    <arg name="points_node" default="/points_raw"/>             <!-- /points_raw, /filtered_points -->  <!-- 输入点云话题 -->
+    <arg name="leaf_size" default="0.1"/>                       <!-- 0.0 ~ 1.0 -->                      <!-- 降采样的体素大小 -->
+    <arg name="cluster_size_min" default="20"/>                 <!-- 1 ~ 100000 -->                     <!-- 单个聚类结果所包含的最小点云数 -->
+    <arg name="cluster_size_max" default="100000"/>             <!-- 0 ~ 200000 -->                     <!-- 单个聚类结果所包含的最大点云数 -->
+    <arg name="clustering_distance" default="0.75"/>            <!-- 0.0 ~ 10.0 -->                     <!-- 每个聚类结果之间的最小距离 -->
+    <arg name="clip_min_height" default="-1.3"/>                <!-- -5.0 ~ 5.0 -->                     <!-- 需要聚类的点云的最小高度 -->
+    <arg name="clip_max_height" default="0.5"/>                 <!-- 0.0 ~ 5.0 -->                      <!-- 需要聚类的点云的最大高度 -->
+    <arg name="use_vector_map" default="false"/>
+    <arg name="wayarea_gridmap_layer" default="grid_map_wayarea"/>
+    <arg name="remove_points_upto" default="0.0"/>                <!-- 0.0 ~ 2.5 -->                    <!-- 移除距离激光雷达的最小距离之内的点云 -->
+    <arg name="keep_lanes" default="false"/>
+    <arg name="keep_lane_left_distance" default="5"/>               <!-- 0 ~ 100 -->
+    <arg name="keep_lane_right_distance" default="5"/>              <!-- 0 ~ 100 -->
+    <arg name="cluster_merge_threshold" default="1.5"/>           <!-- 0.0 ~ 10.0 -->
+    <arg name="use_multiple_thres" default="false"/>
+    <arg name="clustering_ranges" default="[15,30,45,60]"/>
+    <arg name="clustering_distances" default="[0.5,1.1,1.6,2.1,2.6]"/>
+    <arg name="remove_ground" default="false"/>
+    <arg name="use_diffnormals" default="false"/>
 
-  <!-- ==== Lidar KF Contour Track ==== -->
-  <arg name="tracking_type" default="1"/>                       <!-- Associate Only=0, Simple Tracker=1, Contour Tracker=2 -->
-  <arg name="min_object_size" default="0.1"/>                   <!-- 0.0 ~ 2.0 -->
-  <arg name="max_object_size" default="30.0"/>                  <!-- 0.0 ~ 100.0 -->
-  <arg name="vector_map_filter_distance" default="2.0"/>        <!-- 0.0 ~ 20.0 -->
-  <arg name="enableLogging" default="false"/>
-  <arg name="polygon_quarters" default="16"/>                   <!-- 4 ~ 32 -->
-  <arg name="polygon_resolution" default="0.5"/>                <!-- 0.25 ~ 5.0 -->
-  <arg name="max_association_distance" default="4.5"/>          <!-- 0.5 ~ 10.0 -->
-  <arg name="max_association_size_diff" default="2.0"/>         <!-- 0.0 ~ 30.0 -->
-  <arg name="max_remeber_time" default="3"/>                    <!-- 0.0 ~ 10.0 -->
-  <arg name="trust_counter" default="4"/>                       <!-- 1 ~ 15 -->
-  <arg name="enableSimulationMode" default="false"/>
-  <arg name="enableStepByStepMode" default="false"/>
-  <arg name="vehicle_width" default="1.85"/>                    <!-- 1.0 ~ 3.0 -->
-  <arg name="vehicle_length" default="4.2"/>                    <!-- 2.0 ~ 10.0 -->
+    <!-- ==== Lidar KF Contour Track ==== -->
+    <arg name="tracking_type" default="1"/>                       <!-- Associate Only=0, Simple Tracker=1, Contour Tracker=2 -->
+    <arg name="min_object_size" default="0.1"/>                   <!-- 0.0 ~ 2.0 -->                    <!-- 最小目标尺寸 -->
+    <arg name="max_object_size" default="30.0"/>                  <!-- 0.0 ~ 100.0 -->                  <!-- 最大目标尺寸 -->
+    <arg name="vector_map_filter_distance" default="2.0"/>        <!-- 0.0 ~ 20.0 -->                   <!-- 只跟踪规划路径前后多少距离内的目标 -->
+    <arg name="enableLogging" default="false"/>
+    <arg name="polygon_quarters" default="16"/>                   <!-- 4 ~ 32 -->                       <!-- 多边形的角数最大值 -->
+    <arg name="polygon_resolution" default="0.5"/>                <!-- 0.25 ~ 5.0 -->                   <!-- 多边形的分辨率 -->
+    <arg name="max_association_distance" default="4.5"/>          <!-- 0.5 ~ 10.0 -->                   <!-- 目标关联的最大距离 -->
+    <arg name="max_association_size_diff" default="2.0"/>         <!-- 0.0 ~ 30.0 -->                   <!-- 目标关联的最大尺寸差异 -->
+    <arg name="max_remeber_time" default="3"/>                    <!-- 0.0 ~ 10.0 -->                   <!-- 目标最大记忆时间 -->
+    <arg name="trust_counter" default="4"/>                       <!-- 1 ~ 15 -->
+    <arg name="enableSimulationMode" default="false"/>
+    <arg name="enableStepByStepMode" default="false"/>
+    <arg name="vehicle_width" default="1.85"/>                    <!-- 1.0 ~ 3.0 -->
+    <arg name="vehicle_length" default="4.2"/>                    <!-- 2.0 ~ 10.0 -->
 
-  <!-- =============== Nodes start =============== -->
+    <!-- =============== Nodes start =============== -->
 
-  <!-- ==== Lidar Euclidean Cluster Detect ==== -->
-  <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch">
-    <arg name="points_node" value="$(arg points_node)"/>
-    <arg name="remove_ground" value="$(arg remove_ground)"/>
-    <arg name="downsample_cloud" value="$(arg downsample_cloud)"/>
-    <arg name="leaf_size" value="$(arg leaf_size)"/>
-    <arg name="cluster_size_min" value="$(arg cluster_size_min)"/>
-    <arg name="cluster_size_max" value="$(arg cluster_size_max)"/>
-    <arg name="use_diffnormals" value="$(arg use_diffnormals)"/>
-    <arg name="pose_estimation" value="$(arg pose_estimation)"/>
-    <arg name="clip_min_height" value="$(arg clip_min_height)"/>
-    <arg name="clip_max_height" value="$(arg clip_max_height)"/>
-    <arg name="keep_lanes" value="$(arg keep_lanes)"/>
-    <arg name="keep_lane_left_distance" value="$(arg keep_lane_left_distance)"/>
-    <arg name="keep_lane_right_distance" value="$(arg keep_lane_right_distance)"/>
-    <arg name="cluster_merge_threshold" value="$(arg cluster_merge_threshold)"/>
-    <arg name="clustering_distance" value="$(arg clustering_distance)"/>
-    <arg name="use_vector_map" value="$(arg use_vector_map)"/>
-    <arg name="wayarea_gridmap_layer" value="$(arg wayarea_gridmap_layer)"/>
-    <arg name="output_frame" value="$(arg output_frame)"/>
-    <arg name="remove_points_upto" value="$(arg remove_points_upto)"/>
-    <arg name="use_gpu" value="$(arg use_gpu)"/>
-    <arg name="use_multiple_thres" value="$(arg use_multiple_thres)"/>
-    <arg name="clustering_ranges" value="$(arg clustering_ranges)"/>
-    <arg name="clustering_distances" value="$(arg clustering_distances)"/>
-  </include>
+    <!-- ==== Lidar Euclidean Cluster Detect ==== -->
+    <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch">
+        <arg name="points_node" value="$(arg points_node)"/>
+        <arg name="remove_ground" value="$(arg remove_ground)"/>
+        <arg name="downsample_cloud" value="$(arg downsample_cloud)"/>
+        <arg name="leaf_size" value="$(arg leaf_size)"/>
+        <arg name="cluster_size_min" value="$(arg cluster_size_min)"/>
+        <arg name="cluster_size_max" value="$(arg cluster_size_max)"/>
+        <arg name="use_diffnormals" value="$(arg use_diffnormals)"/>
+        <arg name="pose_estimation" value="$(arg pose_estimation)"/>
+        <arg name="clip_min_height" value="$(arg clip_min_height)"/>
+        <arg name="clip_max_height" value="$(arg clip_max_height)"/>
+        <arg name="keep_lanes" value="$(arg keep_lanes)"/>
+        <arg name="keep_lane_left_distance" value="$(arg keep_lane_left_distance)"/>
+        <arg name="keep_lane_right_distance" value="$(arg keep_lane_right_distance)"/>
+        <arg name="cluster_merge_threshold" value="$(arg cluster_merge_threshold)"/>
+        <arg name="clustering_distance" value="$(arg clustering_distance)"/>
+        <arg name="use_vector_map" value="$(arg use_vector_map)"/>
+        <arg name="wayarea_gridmap_layer" value="$(arg wayarea_gridmap_layer)"/>
+        <arg name="output_frame" value="$(arg output_frame)"/>
+        <arg name="remove_points_upto" value="$(arg remove_points_upto)"/>
+        <arg name="use_gpu" value="$(arg use_gpu)"/>
+        <arg name="use_multiple_thres" value="$(arg use_multiple_thres)"/>
+        <arg name="clustering_ranges" value="$(arg clustering_ranges)"/>
+        <arg name="clustering_distances" value="$(arg clustering_distances)"/>
+    </include>
 
-  <!-- ==== Lidar KF Contour Track ==== -->
-  <include file="$(find lidar_kf_contour_track)/launch/lidar_kf_contour_track.launch">
-    <arg name="vehicle_width" value="$(arg vehicle_width)"/>
-    <arg name="vehicle_length" value="$(arg vehicle_length)"/>
-    <arg name="min_object_size" value="$(arg min_object_size)"/>
-    <arg name="max_object_size" value="$(arg max_object_size)"/>
-    <arg name="polygon_quarters" value="$(arg polygon_quarters)"/>
-    <arg name="polygon_resolution" value="$(arg polygon_resolution)"/>
-    <arg name="tracking_type" value="$(arg tracking_type)"/>
-    <arg name="max_association_distance" value="$(arg max_association_distance)"/>
-    <arg name="max_association_size_diff" value="$(arg max_association_size_diff)"/>
-    <arg name="max_remeber_time" value="$(arg max_remeber_time)"/>
-    <arg name="trust_counter" value="$(arg trust_counter)"/>
-    <arg name="enableSimulationMode" value="$(arg enableSimulationMode)"/>
-    <arg name="enableStepByStepMode" value="$(arg enableStepByStepMode)"/>
-    <arg name="vector_map_filter_distance" value="$(arg vector_map_filter_distance)"/>
-    <arg name="enableLogging" value="$(arg enableLogging)"/>
-  </include>
+    <!-- ==== Lidar KF Contour Track ==== -->
+    <include file="$(find lidar_kf_contour_track)/launch/lidar_kf_contour_track.launch">
+        <arg name="vehicle_width" value="$(arg vehicle_width)"/>
+        <arg name="vehicle_length" value="$(arg vehicle_length)"/>
+        <arg name="min_object_size" value="$(arg min_object_size)"/>
+        <arg name="max_object_size" value="$(arg max_object_size)"/>
+        <arg name="polygon_quarters" value="$(arg polygon_quarters)"/>
+        <arg name="polygon_resolution" value="$(arg polygon_resolution)"/>
+        <arg name="tracking_type" value="$(arg tracking_type)"/>
+        <arg name="max_association_distance" value="$(arg max_association_distance)"/>
+        <arg name="max_association_size_diff" value="$(arg max_association_size_diff)"/>
+        <arg name="max_remeber_time" value="$(arg max_remeber_time)"/>
+        <arg name="trust_counter" value="$(arg trust_counter)"/>
+        <arg name="enableSimulationMode" value="$(arg enableSimulationMode)"/>
+        <arg name="enableStepByStepMode" value="$(arg enableStepByStepMode)"/>
+        <arg name="vector_map_filter_distance" value="$(arg vector_map_filter_distance)"/>
+        <arg name="enableLogging" value="$(arg enableLogging)"/>
+    </include>
 </launch>
