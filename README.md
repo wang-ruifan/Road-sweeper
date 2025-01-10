@@ -231,6 +231,25 @@ git clone -b source https://github.com/wang-ruifan/Road-sweeper.git
 cd ..
 rosdepc install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
 ```
+rosdep安装依赖项时，会报错找不到系统依赖项，需要手动安装。如下面的报错
+
+```shell
+ERROR: the following packages/stacks could not have their rosdep keys resolved
+to system dependencies:
+road_occupancy_processor: Cannot locate rosdep definition for [grid_map_ros]
+xsens_driver: Cannot locate rosdep definition for [gps_common]
+nmea_navsat: Cannot locate rosdep definition for [nmea_navsat_driver]
+autowarecmd_to_can: Cannot locate rosdep definition for [socketcan_bridge]
+```
+
+则需要手动安装这些依赖项
+
+```shell
+sudo apt-get install ros-melodic-grid-map-ros
+sudo apt-get install ros-melodic-gps-common
+sudo apt-get install ros-melodic-nmea-navsat-driver
+sudo apt-get install ros-melodic-socketcan-bridge
+```
 
 ### 3.4 编译安装
 
