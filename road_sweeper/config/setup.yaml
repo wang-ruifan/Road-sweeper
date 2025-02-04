@@ -7,5 +7,3 @@ tf_pitch: 0
 tf_roll: 0
 
 localizer: velodyne
-
-use_sim_time: false

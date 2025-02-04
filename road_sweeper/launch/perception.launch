@@ -8,7 +8,7 @@
     <arg name="output_frame" default="map"/>                    <!-- map, velodyne -->                  <!-- 聚类结果输出坐标系 -->
     <arg name="pose_estimation" default="true"/>                <!-- true, false -->                    <!-- 是否进行位姿估计 -->
     <arg name="downsample_cloud" default="false"/>              <!-- true, false -->                    <!-- 是否对点云进行降采样 -->
-    <arg name="points_node" default="/points_raw"/>             <!-- /points_raw, /filtered_points -->  <!-- 输入点云话题 -->
+    <arg name="points_node" default="/points_no_ground"/>       <!-- /points_raw, /points_no_ground --> <!-- 输入点云话题 -->
     <arg name="leaf_size" default="0.1"/>                       <!-- 0.0 ~ 1.0 -->                      <!-- 降采样的体素大小 -->
     <arg name="cluster_size_min" default="20"/>                 <!-- 1 ~ 100000 -->                     <!-- 单个聚类结果所包含的最小点云数 -->
     <arg name="cluster_size_max" default="100000"/>             <!-- 0 ~ 200000 -->                     <!-- 单个聚类结果所包含的最大点云数 -->
@@ -32,7 +32,7 @@
     <arg name="tracking_type" default="1"/>                       <!-- Associate Only=0, Simple Tracker=1, Contour Tracker=2 -->
     <arg name="min_object_size" default="0.1"/>                   <!-- 0.0 ~ 2.0 -->                    <!-- 最小目标尺寸 -->
     <arg name="max_object_size" default="30.0"/>                  <!-- 0.0 ~ 100.0 -->                  <!-- 最大目标尺寸 -->
-    <arg name="vector_map_filter_distance" default="2.0"/>        <!-- 0.0 ~ 20.0 -->                   <!-- 只跟踪规划路径前后多少距离内的目标 -->
+    <arg name="vector_map_filter_distance" default="0.0"/>        <!-- 0.0 ~ 20.0 -->                   <!-- 只跟踪规划路径前后多少距离内的目标 -->
     <arg name="enableLogging" default="false"/>
     <arg name="polygon_quarters" default="16"/>                   <!-- 4 ~ 32 -->                       <!-- 多边形的角数最大值 -->
     <arg name="polygon_resolution" default="0.5"/>                <!-- 0.25 ~ 5.0 -->                   <!-- 多边形的分辨率 -->

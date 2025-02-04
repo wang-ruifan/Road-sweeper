@@ -3,7 +3,7 @@
     <param name="/use_sim_time" value="true" />
 
     <!-- Load setup.yaml -->
-    rosparam command="load" file="$(find road_sweeper)/config/setup.yaml"/>
+    <rosparam command="load" file="$(find road_sweeper)/config/setup.yaml"/>
 
     <!-- Setup TF tree of base_link and velodyne -->
     <!-- Set x = 1, y = 0, z = 0.9, yaw = -1.57, pitch = 0, roll = 0 -->
