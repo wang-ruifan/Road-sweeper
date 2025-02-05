@@ -656,7 +656,7 @@ public:
     response.objects.header.frame_id = "map";
     for (const auto& lane : traveling_route)
     {
-      WayArea way_area = vmap_.findByKey(Key<WayArea>(lane.linkwaid));
+      WayArea way_area = vmap_.findByKey(Key<WayArea>(0)); // edited by wangruifan, change from lane.linkwaid to 0
       if (way_area.waid == 0)
         return false;
       response.objects.data.push_back(way_area);

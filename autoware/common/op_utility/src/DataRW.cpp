@@ -952,7 +952,7 @@ void AisanLanesFileReader::ParseNextLine(const vector_map_msgs::Lane& _rec, Aisa
   data.LaneType = _rec.lanetype;
   //data.LeftLaneId = _rec.;
   data.LimitVel = _rec.limitvel;
-  data.LinkWAID = _rec.linkwaid;
+  //data.LinkWAID = _rec.linkwaid;
   data.LnID = _rec.lnid;
   data.Lno = _rec.lno;
   data.RefVel = _rec.refvel;
@@ -960,7 +960,7 @@ void AisanLanesFileReader::ParseNextLine(const vector_map_msgs::Lane& _rec, Aisa
   data.RoadSecID = _rec.roadsecid;
   data.Span = _rec.span;
   //data.originalMapID = _rec.;
-
+  data.IsSweep = _rec.issweep;        // edited by wangruifan
 }
 
 AisanLanesFileReader::AisanLane* AisanLanesFileReader::GetDataRowById(int _lnid)
@@ -1011,6 +1011,7 @@ bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
     data.Span     = strtod(lineData.at(0).at(14).c_str(), NULL);
     data.LCnt     = strtol(lineData.at(0).at(15).c_str(), NULL, 10);
     data.Lno      = strtol(lineData.at(0).at(16).c_str(), NULL, 10);
+    
 
 
     if(lineData.at(0).size() < 23) return true;
@@ -1020,8 +1021,8 @@ bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
     data.RefVel     = strtol(lineData.at(0).at(19).c_str(), NULL, 10);
     data.RoadSecID  = strtol(lineData.at(0).at(20).c_str(), NULL, 10);
     data.LaneChgFG   = strtol(lineData.at(0).at(21).c_str(), NULL, 10);
-    data.LinkWAID  = strtol(lineData.at(0).at(22).c_str(), NULL, 10);
-
+    //data.LinkWAID  = strtol(lineData.at(0).at(22).c_str(), NULL, 10);
+    data.IsSweep = strtol(lineData.at(0).at(22).c_str(), NULL, 10);        // edited by wangruifan
 
     if(lineData.at(0).size() > 23)
     {

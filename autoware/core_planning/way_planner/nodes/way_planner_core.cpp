@@ -281,6 +281,7 @@ void way_planner_core::UpdateRoadMap(const AutowareRoadNetwork& src_map, Planner
     l.Span     =  src_map.lanes.data.at(i).span;
     l.RefVel  =  src_map.lanes.data.at(i).refvel;
     l.LimitVel  =  src_map.lanes.data.at(i).limitvel;
+    l.IsSweep = src_map.lanes.data.at(i).issweep;       // edited by wangruifan
 
 //    l.LaneChgFG =  src_map.lanes.at(i).;
 //    l.LaneType   =  src_map.lanes.at(i).blid;

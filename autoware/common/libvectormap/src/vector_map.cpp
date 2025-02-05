@@ -82,6 +82,7 @@ void VectorMap::load_lanes(const vector_map::LaneArray& msg)
     tmp.span    = lane.span;
     tmp.lcnt    = lane.lcnt;
     tmp.lno     = lane.lno;
+    tmp.issweep = lane.issweep;
 
     lanes.insert(std::map<int, Lane>::value_type(tmp.lnid, tmp));
   }
