@@ -76,10 +76,10 @@ void vehicleCmdCallback(const autoware_msgs::VehicleCmd::ConstPtr& msg) {
 }
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "vehicle_cmd_to_can");
+    ros::init(argc, argv, "vehicle_cmd_to_can_node");
     ros::NodeHandle nh;
 
-    ROS_INFO("Autowarecmd_to_can_node started, subscribing /vehicle_cmd, publishing /sent_message");
+    ROS_INFO("Vehicle_cmd_to_can_node started, subscribing /vehicle_cmd, publishing /sent_message");
 
     // 订阅 Autoware 发布的 vehicle_cmd
     ros::Subscriber cmd_sub = nh.subscribe("/vehicle_cmd", 10, vehicleCmdCallback);
