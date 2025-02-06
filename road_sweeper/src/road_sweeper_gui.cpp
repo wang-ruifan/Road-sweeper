@@ -2,29 +2,37 @@
 #include <QApplication>
 
 RoadSweeperGui::RoadSweeperGui(QWidget *parent)
-    : QMainWindow(parent),
-      startButton(new QPushButton("Start Launch File", this)),
-      controlButton(new QPushButton("Control Auto Sweep", this)),
-      launchProcess(nullptr)
+    : QMainWindow(parent)
 {
-    // Set window title
-    setWindowTitle("Road Sweeper GUI");
-    
-    // Set window size
-    resize(400, 300);
-    
-    // Set up the layout
+    setupButton = new QPushButton("Setup", this);
+    mapButton = new QPushButton("Map", this);
+    localizationButton = new QPushButton("Localization", this);
+    planningButton = new QPushButton("Planning", this);
+    perceptionButton = new QPushButton("Perception", this);
+    controlButton = new QPushButton("Auto Sweep", this);
+    controlButton->setCheckable(true);
+
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(startButton);
+    layout->addWidget(setupButton);
+    layout->addWidget(mapButton);
+    layout->addWidget(localizationButton);
+    layout->addWidget(planningButton);
+    layout->addWidget(perceptionButton);
     layout->addWidget(controlButton);
 
     QWidget *centralWidget = new QWidget(this);
     centralWidget->setLayout(layout);
     setCentralWidget(centralWidget);
 
-    // Connect buttons to slots
-    connect(startButton, &QPushButton::clicked, this, &RoadSweeperGui::toggleLaunchFile);
+    connect(setupButton, &QPushButton::clicked, this, &RoadSweeperGui::toggleSetupLaunch);
+    connect(mapButton, &QPushButton::clicked, this, &RoadSweeperGui::toggleMapLaunch);
+    connect(localizationButton, &QPushButton::clicked, this, &RoadSweeperGui::toggleLocalizationLaunch);
+    connect(planningButton, &QPushButton::clicked, this, &RoadSweeperGui::togglePlanningLaunch);
+    connect(perceptionButton, &QPushButton::clicked, this, &RoadSweeperGui::togglePerceptionLaunch);
     connect(controlButton, &QPushButton::clicked, this, &RoadSweeperGui::controlAutoSweep);
+
+    setupProcess = mapProcess = localizationProcess = planningProcess = perceptionProcess = nullptr;
+    setupLaunched = mapLaunched = localizationLaunched = planningLaunched = perceptionLaunched = false;
 
     // Create service client
     nh = ros::NodeHandle();
@@ -33,46 +41,77 @@ RoadSweeperGui::RoadSweeperGui(QWidget *parent)
     // Initialize variables
     autoSweepEnabled = false;
     setupLaunched = false;
+    mapLaunched = false;
+    localizationLaunched = false;
+    planningLaunched = false;
+    perceptionLaunched = false;
 }
 
 RoadSweeperGui::~RoadSweeperGui()
 {
-    if (launchProcess)
+    QProcess *processes[] = {setupProcess, mapProcess, localizationProcess, planningProcess, perceptionProcess};
+    for (auto process : processes)
     {
-        launchProcess->terminate();
-        launchProcess->waitForFinished();
-        delete launchProcess;
+        if (process)
+        {
+            process->terminate();
+            process->waitForFinished();
+            delete process;
+        }
     }
 }
 
-void RoadSweeperGui::toggleLaunchFile()
+void RoadSweeperGui::toggleSetupLaunch()
 {
-    if (setupLaunched)
+    toggleLaunch(setupProcess, setupButton, setupLaunched, "setup.launch");
+}
+
+void RoadSweeperGui::toggleMapLaunch()
+{
+    toggleLaunch(mapProcess, mapButton, mapLaunched, "map.launch");
+}
+
+void RoadSweeperGui::toggleLocalizationLaunch()
+{
+    toggleLaunch(localizationProcess, localizationButton, localizationLaunched, "localization.launch");
+}
+
+void RoadSweeperGui::togglePlanningLaunch()
+{
+    toggleLaunch(planningProcess, planningButton, planningLaunched, "global_planning.launch");
+}
+
+void RoadSweeperGui::togglePerceptionLaunch()
+{
+    toggleLaunch(perceptionProcess, perceptionButton, perceptionLaunched, "perception.launch");
+}
+
+void RoadSweeperGui::toggleLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile)
+{
+    if (launched)
     {
         QProcess killProcess;
-        killProcess.start("bash", QStringList() << "-c" << "pkill -f 'roslaunch.*setup.launch'");
+        killProcess.start("pkill", QStringList() << "-f" << launchFile);
         killProcess.waitForFinished();
 
-        // 终止gnome-terminal
-        if (launchProcess) {
-            launchProcess->terminate();
-            launchProcess->waitForFinished();
-            delete launchProcess;
-            launchProcess = nullptr;
+        if (process)
+        {
+            process->terminate();
+            process->waitForFinished();
+            delete process;
+            process = nullptr;
         }
-
-        startButton->setStyleSheet("");
-        setupLaunched = false;
+        button->setStyleSheet("");
+        launched = false;
     }
     else
     {
-        launchProcess = new QProcess(this);
+        process = new QProcess(this);
         QStringList arguments;
-        arguments << "-e" << "roslaunch road_sweeper setup.launch";
-        launchProcess->start("gnome-terminal", arguments);
-
-        startButton->setStyleSheet("background-color: green");
-        setupLaunched = true;
+        arguments << "-e" << QString("roslaunch road_sweeper %1").arg(launchFile);
+        process->start("gnome-terminal", arguments);
+        button->setStyleSheet("background-color: green");
+        launched = true;
     }
 }
 

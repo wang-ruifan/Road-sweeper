@@ -22,22 +22,39 @@ public:
 	~RoadSweeperGui();
 
 private slots:
-	void toggleLaunchFile();
+	void toggleSetupLaunch();
+	void toggleMapLaunch();
+	void toggleLocalizationLaunch();
+	void togglePlanningLaunch();
+	void togglePerceptionLaunch();
 	void controlAutoSweep();
 
 private:
-	QPushButton *startButton;
+	void toggleLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile);
+
+	QPushButton *setupButton;
+	QPushButton *mapButton;
+	QPushButton *localizationButton;
+	QPushButton *planningButton;
+	QPushButton *perceptionButton;
 	QPushButton *controlButton;
 
-	QTextEdit *outputDisplay;
-
-	QProcess *launchProcess;
+	QProcess *setupProcess;
+	QProcess *mapProcess;
+	QProcess *localizationProcess;
+	QProcess *planningProcess;
+	QProcess *perceptionProcess;
 
 	ros::NodeHandle nh;
 	ros::ServiceClient client;
 
-	bool autoSweepEnabled;
 	bool setupLaunched;
+	bool mapLaunched;
+	bool localizationLaunched;
+	bool planningLaunched;
+	bool perceptionLaunched;
+
+	bool autoSweepEnabled;
 };
 
 #endif // ROAD_SWEEPER_GUI_HPP
