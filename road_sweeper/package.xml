@@ -6,19 +6,15 @@
   <maintainer email="wangruifan2003@qq.com">wang-ruifan</maintainer>
   <license>Apache 2.0</license>
 
+  <depend>std_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>autoware_msgs</depend>
+  <depend>vector_map_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>socketcan_bridge</depend>
+  <depend>std_srvs</depend>
+  <depend>qtbase5-dev</depend>
+
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>autoware_msgs</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>socketcan_bridge</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_export_depend>autoware_msgs</build_export_depend>
-  <build_export_depend>roscpp</build_export_depend>
-  <build_export_depend>socketcan_bridge</build_export_depend>
-  <build_export_depend>std_msgs</build_export_depend>
-  
-  <exec_depend>autoware_msgs</exec_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>socketcan_bridge</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
 
 </package>
