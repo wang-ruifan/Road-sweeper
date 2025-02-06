@@ -40,4 +40,9 @@ int32 limitvel
 int32 refvel
 int32 roadsecid
 int32 lanecfgfg
-int32 linkwaid
+#int32 linkwaid				edited by wangruifan
+
+# Roadsweeper param			edited by wangruifan
+int32 issweep
+uint8 NOSWEEP=0
+uint8 SWEEP=1

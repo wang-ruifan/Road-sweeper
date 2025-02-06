@@ -1740,7 +1740,7 @@ std::ostream& operator<<(std::ostream& os, const vector_map::Lane& obj)
      << obj.refvel << ","
      << obj.roadsecid << ","
      << obj.lanecfgfg << ","
-     << obj.linkwaid;
+     << obj.issweep;
   return os;
 }
 
@@ -2113,7 +2113,7 @@ std::istream& operator>>(std::istream& is, vector_map::Lane& obj)
     obj.refvel = 0;
     obj.roadsecid = 0;
     obj.lanecfgfg = 0;
-    obj.linkwaid = 0;
+    //obj.linkwaid = 0;     // edited by wangruifan
     return is;
   }
   obj.lanetype = std::stoi(columns[17]);
@@ -2123,10 +2123,11 @@ std::istream& operator>>(std::istream& is, vector_map::Lane& obj)
   obj.lanecfgfg = std::stoi(columns[21]);
   if (n == 22)
   {
-    obj.linkwaid = 0;
+    //obj.linkwaid = 0;     // edited by wangruifan
     return is;
   }
-  obj.linkwaid = std::stoi(columns[22]);
+  obj.issweep = std::stoi(columns[22]);     // edited by wangruifan
+  //obj.linkwaid = 0;
   return is;
 }
 

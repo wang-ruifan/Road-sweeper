@@ -123,8 +123,8 @@ typedef struct
   double span;
   int lcnt;
   int lno;
-}
-Lane;
+  int issweep;      // edited by wangruifan
+} Lane;
 
 class VectorMap
 {

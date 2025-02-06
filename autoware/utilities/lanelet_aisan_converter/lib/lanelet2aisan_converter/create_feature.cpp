@@ -281,9 +281,10 @@ void Lanelet2AisanConverter::createLanes()
       lane.lanecfgfg = (lane.lcnt > 1) ? 1 : 0;
       lane.roadsecid = 0;  // Not supported
       lane.clossid = 0;    // Not supported
-      lane.linkwaid = 0;   // Not supported
+      //lane.linkwaid = 0;   // Not supported       edited by wangruifan
       lane.jct = 0;        // Not supported
       lane.lanetype = 0;   // Not supported
+      lane.issweep = 0;    // edited by wangruifan
 
       // Backward conectivities will be (re)calculated later
       lane.blid = (i == 0) ? 0 : lane_ids.at(i - 1);

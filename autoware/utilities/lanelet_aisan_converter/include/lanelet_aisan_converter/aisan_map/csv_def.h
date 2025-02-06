@@ -201,7 +201,7 @@ struct csv_def<vector_map_msgs::Lane>
   static constexpr const char* csv_file_name = "lane.csv";
   static constexpr const char* csv_header_row = "LnID,DID,BLID,FLID,BNID,FNID,JCT,BLID2,BLID3,BLID4,"
                                                 "FLID2,FLID3,FLID4,ClosssID,Span,LCnt,Lno,LaneType,"
-                                                "LimitVel,RefVel,RoadSecID,LaneChgFG,LinkWAID";
+                                                "LimitVel,RefVel,RoadSecID,LaneChgFG,IsSweep";
 
   static inline std::string createCsvDataRow(const vector_map_msgs::Lane& obj)
   {
@@ -229,7 +229,7 @@ struct csv_def<vector_map_msgs::Lane>
     oss << obj.refvel << ",";
     oss << obj.roadsecid << ",";
     oss << obj.lanecfgfg << ",";
-    oss << obj.linkwaid;
+    oss << obj.issweep;
 
     return oss.str();
   }

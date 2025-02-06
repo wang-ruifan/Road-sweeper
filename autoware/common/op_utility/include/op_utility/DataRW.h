@@ -382,10 +382,11 @@ public:
     int RefVel  ;
     int RoadSecID;
     int LaneChgFG;
-    int LinkWAID;
+    //int LinkWAID;
     char LaneDir;
     int  LeftLaneId;
     int RightLaneId;
+    int IsSweep;
 
     int originalMapID;
   };
