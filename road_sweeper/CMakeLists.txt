@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(road_sweeper)
 
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt5 REQUIRED COMPONENTS Widgets Core Gui)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
@@ -43,6 +43,7 @@ add_executable(road_sweeper_gui ${road_sweeper_gui_SRCS})
 target_link_libraries(road_sweeper_gui
   ${catkin_LIBRARIES}
   Qt5::Widgets
+  Qt5::Core
 )
 
 install(TARGETS auto_sweep_node

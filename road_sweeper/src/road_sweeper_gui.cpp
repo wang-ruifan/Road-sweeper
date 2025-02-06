@@ -1,16 +1,16 @@
 #include "road_sweeper_gui.hpp"
 #include <QApplication>
-#include <QProcess>
 
 RoadSweeperGui::RoadSweeperGui(QWidget *parent)
     : QMainWindow(parent),
       startButton(new QPushButton("Start Launch File", this)),
-      controlButton(new QPushButton("Control Auto Sweep", this))
+      controlButton(new QPushButton("Control Auto Sweep", this)),
+      launchProcess(nullptr)
 {
-    // 设置窗口标题
+    // Set window title
     setWindowTitle("Road Sweeper GUI");
     
-    // 设置窗口大小
+    // Set window size
     resize(400, 300);
     
     // Set up the layout
@@ -23,24 +23,57 @@ RoadSweeperGui::RoadSweeperGui(QWidget *parent)
     setCentralWidget(centralWidget);
 
     // Connect buttons to slots
-    connect(startButton, &QPushButton::clicked, this, &RoadSweeperGui::startLaunchFile);
+    connect(startButton, &QPushButton::clicked, this, &RoadSweeperGui::toggleLaunchFile);
     connect(controlButton, &QPushButton::clicked, this, &RoadSweeperGui::controlAutoSweep);
 
     // Create service client
     nh = ros::NodeHandle();
     client = nh.serviceClient<std_srvs::SetBool>("enable_auto_sweep");
+
+    // Initialize variables
+    autoSweepEnabled = false;
+    setupLaunched = false;
 }
 
 RoadSweeperGui::~RoadSweeperGui()
 {
+    if (launchProcess)
+    {
+        launchProcess->terminate();
+        launchProcess->waitForFinished();
+        delete launchProcess;
+    }
 }
 
-void RoadSweeperGui::startLaunchFile()
+void RoadSweeperGui::toggleLaunchFile()
 {
-    QProcess *process = new QProcess(this);
-    QStringList arguments;
-    arguments << "-e" << "roslaunch road_sweeper setup.launch";
-    process->start("gnome-terminal", arguments);
+    if (setupLaunched)
+    {
+        QProcess killProcess;
+        killProcess.start("bash", QStringList() << "-c" << "pkill -f 'roslaunch.*setup.launch'");
+        killProcess.waitForFinished();
+
+        // 终止gnome-terminal
+        if (launchProcess) {
+            launchProcess->terminate();
+            launchProcess->waitForFinished();
+            delete launchProcess;
+            launchProcess = nullptr;
+        }
+
+        startButton->setStyleSheet("");
+        setupLaunched = false;
+    }
+    else
+    {
+        launchProcess = new QProcess(this);
+        QStringList arguments;
+        arguments << "-e" << "roslaunch road_sweeper setup.launch";
+        launchProcess->start("gnome-terminal", arguments);
+
+        startButton->setStyleSheet("background-color: green");
+        setupLaunched = true;
+    }
 }
 
 void RoadSweeperGui::controlAutoSweep()
