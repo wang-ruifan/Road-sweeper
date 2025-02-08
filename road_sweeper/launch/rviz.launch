@@ -1,0 +1,7 @@
+<launch>
+    <!-- Argument to specify the RViz configuration file -->
+    <arg name="config_file" default="$(find road_sweeper)/config/road_sweeper.rviz"/>
+
+    <!-- Node to start RViz with the specified configuration file -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg config_file)" />
+</launch>

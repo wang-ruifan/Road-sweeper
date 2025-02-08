@@ -5,6 +5,9 @@
 RoadSweeperGui::RoadSweeperGui(QWidget *parent)
     : QMainWindow(parent)
 {
+    /*====== Widget setup ======*/
+    /*=== Control tab ===*/
+    // Buttons
     setupButton = new QPushButton("Setup", this);
     mapButton = new QPushButton("Map", this);
     localizationButton = new QPushButton("Localization", this);
@@ -14,25 +17,48 @@ RoadSweeperGui::RoadSweeperGui(QWidget *parent)
     cmdOutputButton = new QPushButton("Cmd Output", this);
     canNodeButton = new QPushButton("Cmd To Can", this);
     sweepNodeButton = new QPushButton("Auto Sweep Node", this);
-    
+    // Checkboxes
     autoSweepCheckBox = new QCheckBox("Auto Sweep", this);
 
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(setupButton);
-    layout->addWidget(mapButton);
-    layout->addWidget(localizationButton);
-    layout->addWidget(globalPlanningButton);
-    layout->addWidget(perceptionButton);
-    layout->addWidget(localPlanningButton);
-    layout->addWidget(cmdOutputButton);
-    layout->addWidget(canNodeButton);
-    layout->addWidget(sweepNodeButton);
-    layout->addWidget(autoSweepCheckBox);
+    /*=== Display tab ===*/
+    // Buttons
+    rvizButton = new QPushButton("RViz", this);
 
+    /*====== Layout setup ======*/
+    QHBoxLayout *layout = new QHBoxLayout;
+    
+    /*=== Control tab ===*/
+    QVBoxLayout *controlLayout = new QVBoxLayout;
+    controlLayout->addWidget(setupButton);
+    controlLayout->addWidget(mapButton);
+    controlLayout->addWidget(localizationButton);
+    controlLayout->addWidget(globalPlanningButton);
+    controlLayout->addWidget(perceptionButton);
+    controlLayout->addWidget(localPlanningButton);
+    controlLayout->addWidget(cmdOutputButton);
+    controlLayout->addWidget(canNodeButton);
+
+    QHBoxLayout *sweepLayout = new QHBoxLayout;
+    sweepLayout->addWidget(sweepNodeButton);
+    sweepLayout->addWidget(autoSweepCheckBox);
+    controlLayout->addLayout(sweepLayout);
+
+    layout->addLayout(controlLayout);
+
+    /*=== Display tab ===*/
+    QVBoxLayout *displayLayout = new QVBoxLayout;
+    displayLayout->addWidget(rvizButton);
+
+    layout->addLayout(displayLayout);
+
+    /*=== Central widget ===*/
     QWidget *centralWidget = new QWidget(this);
     centralWidget->setLayout(layout);
     setCentralWidget(centralWidget);
 
+    /*====== Signal/slot connections ======*/
+    /*=== Control tab ===*/
+    // Buttons
     connect(setupButton, &QPushButton::clicked, this, &RoadSweeperGui::toggleSetupLaunch);
     connect(mapButton, &QPushButton::clicked, this, &RoadSweeperGui::toggleMapLaunch);
     connect(localizationButton, &QPushButton::clicked, this, &RoadSweeperGui::toggleLocalizationLaunch);
@@ -42,16 +68,34 @@ RoadSweeperGui::RoadSweeperGui(QWidget *parent)
     connect(cmdOutputButton, &QPushButton::clicked, this, &RoadSweeperGui::toggleCmdOutputLaunch);
     connect(canNodeButton, &QPushButton::clicked, this, &RoadSweeperGui::toggleCanNodeLaunch);
     connect(sweepNodeButton, &QPushButton::clicked, this, &RoadSweeperGui::toggleSweepNodeLaunch);
+    // Checkboxes
     connect(autoSweepCheckBox, &QCheckBox::clicked, this, &RoadSweeperGui::controlAutoSweep);
 
-    setupProcess = mapProcess = localizationProcess = globalPlanningProcess = perceptionProcess = nullptr;
-    setupLaunched = mapLaunched = localizationLaunched = globalPlanningLaunched = perceptionLaunched = false;
+    /*=== Display tab ===*/
+    // Buttons
+    connect(rvizButton, &QPushButton::clicked, this, &RoadSweeperGui::toggleRvizLaunch);
 
+    /*====== ROS setup ======*/
     // Create service client
     nh = ros::NodeHandle();
     client = nh.serviceClient<std_srvs::SetBool>("enable_auto_sweep");
 
-    // Initialize variables
+    /*====== Process setup ======*/
+    /*=== Control tab ===*/
+    setupProcess = nullptr;
+    mapProcess = nullptr;
+    localizationProcess = nullptr;
+    globalPlanningProcess = nullptr;
+    perceptionProcess = nullptr;
+    localPlanningProcess = nullptr;
+    cmdOutputProcess = nullptr;
+    canNodeProcess = nullptr;
+    sweepNodeProcess = nullptr;
+    /*=== Display tab ===*/
+    rvizProcess = nullptr;
+
+    /*====== Launch status setup ======*/
+    /*=== Control tab ===*/
     setupLaunched = false;
     mapLaunched = false;
     localizationLaunched = false;
@@ -61,15 +105,16 @@ RoadSweeperGui::RoadSweeperGui(QWidget *parent)
     cmdOutputLaunched = false;
     canNodeLaunched = false;
     sweepNodeLaunched = false;
+    /*=== Display tab ===*/
+    rvizLaunched = false;
 }
 
 RoadSweeperGui::~RoadSweeperGui()
 {
-    bool launched[] = {setupLaunched, mapLaunched, localizationLaunched, globalPlanningLaunched, perceptionLaunched, localPlanningLaunched, cmdOutputLaunched, canNodeLaunched, sweepNodeLaunched};
-    QProcess* processes[] = {setupProcess, mapProcess, localizationProcess, globalPlanningProcess, perceptionProcess, localPlanningProcess, cmdOutputProcess, canNodeProcess, sweepNodeProcess};
-    QString launchFiles[] = {"setup.launch", "map.launch", "localization.launch", "global_planning.launch", "perception.launch", "local_planning.launch", "cmd_output.launch", "cmd_to_can.launch", "auto_sweep.launch"};
-
-    for (int i = 0; i < 9; i++)
+    bool launched[] = {setupLaunched, mapLaunched, localizationLaunched, globalPlanningLaunched, perceptionLaunched, localPlanningLaunched, cmdOutputLaunched, canNodeLaunched, sweepNodeLaunched, rvizLaunched};
+    QProcess* processes[] = {setupProcess, mapProcess, localizationProcess, globalPlanningProcess, perceptionProcess, localPlanningProcess, cmdOutputProcess, canNodeProcess, sweepNodeProcess, rvizProcess};
+    QString launchFiles[] = {SETUP_LAUNCH_FILE, MAP_LAUNCH_FILE, LOCALIZATION_LAUNCH_FILE, GLOBAL_PLANNING_LAUNCH_FILE, PERCEPTION_LAUNCH_FILE, LOCAL_PLANNING_LAUNCH_FILE, CMD_OUTPUT_LAUNCH_FILE, CAN_NODE_LAUNCH_FILE, SWEEP_NODE_LAUNCH_FILE, RVIZ_LAUNCH_FILE};
+    for (int i = 0; i < 10; i++)
     {
         if (launched[i])
         {
@@ -90,47 +135,52 @@ RoadSweeperGui::~RoadSweeperGui()
 
 void RoadSweeperGui::toggleSetupLaunch()
 {
-    toggleLaunch(setupProcess, setupButton, setupLaunched, "setup.launch");
+    toggleLaunch(setupProcess, setupButton, setupLaunched, SETUP_LAUNCH_FILE);
 }
 
 void RoadSweeperGui::toggleMapLaunch()
 {
-    toggleLaunch(mapProcess, mapButton, mapLaunched, "map.launch");
+    toggleLaunch(mapProcess, mapButton, mapLaunched, MAP_LAUNCH_FILE);
 }
 
 void RoadSweeperGui::toggleLocalizationLaunch()
 {
-    toggleLaunch(localizationProcess, localizationButton, localizationLaunched, "localization.launch");
+    toggleLaunch(localizationProcess, localizationButton, localizationLaunched, LOCALIZATION_LAUNCH_FILE);
 }
 
 void RoadSweeperGui::togglePlanningLaunch()
 {
-    toggleLaunch(globalPlanningProcess, globalPlanningButton, globalPlanningLaunched, "global_planning.launch");
+    toggleLaunch(globalPlanningProcess, globalPlanningButton, globalPlanningLaunched, GLOBAL_PLANNING_LAUNCH_FILE);
 }
 
 void RoadSweeperGui::togglePerceptionLaunch()
 {
-    toggleLaunch(perceptionProcess, perceptionButton, perceptionLaunched, "perception.launch");
+    toggleLaunch(perceptionProcess, perceptionButton, perceptionLaunched, PERCEPTION_LAUNCH_FILE);
 }
 
 void RoadSweeperGui::toggleLocalPlanningLaunch()
 {
-    toggleLaunch(localPlanningProcess, localPlanningButton, localPlanningLaunched, "local_planning.launch");
+    toggleLaunch(localPlanningProcess, localPlanningButton, localPlanningLaunched, LOCAL_PLANNING_LAUNCH_FILE);
 }
 
 void RoadSweeperGui::toggleCmdOutputLaunch()
 {
-    toggleLaunch(cmdOutputProcess, cmdOutputButton, cmdOutputLaunched, "cmd_output.launch");
+    toggleLaunch(cmdOutputProcess, cmdOutputButton, cmdOutputLaunched, CMD_OUTPUT_LAUNCH_FILE);
 }
 
 void RoadSweeperGui::toggleCanNodeLaunch()
 {
-    toggleLaunch(canNodeProcess, canNodeButton, canNodeLaunched, "cmd_to_can.launch");
+    toggleLaunch(canNodeProcess, canNodeButton, canNodeLaunched, CAN_NODE_LAUNCH_FILE);
 }
 
 void RoadSweeperGui::toggleSweepNodeLaunch()
 {
-    toggleLaunch(sweepNodeProcess, sweepNodeButton, sweepNodeLaunched, "auto_sweep.launch");
+    toggleLaunch(sweepNodeProcess, sweepNodeButton, sweepNodeLaunched, SWEEP_NODE_LAUNCH_FILE);
+}
+
+void RoadSweeperGui::toggleRvizLaunch()
+{
+    toggleLaunch(rvizProcess, rvizButton, rvizLaunched, RVIZ_LAUNCH_FILE);
 }
 
 void RoadSweeperGui::toggleLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile)
