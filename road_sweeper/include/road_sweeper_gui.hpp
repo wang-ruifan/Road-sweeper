@@ -8,6 +8,7 @@
 #include <QTextEdit>
 #include <QProcess>
 #include <QString>
+#include <QDebug>
 #include <ros/ros.h>
 #include <std_srvs/SetBool.h>
 #include <thread>
@@ -16,17 +17,20 @@
 #include <vector>
 #include <memory>
 
-#define SETUP_LAUNCH_FILE "setup.launch"
-#define MAP_LAUNCH_FILE "map.launch"
-#define LOCALIZATION_LAUNCH_FILE "localization.launch"
-#define GLOBAL_PLANNING_LAUNCH_FILE "global_planning.launch"
-#define PERCEPTION_LAUNCH_FILE "perception.launch"
-#define LOCAL_PLANNING_LAUNCH_FILE "local_planning.launch"
-#define CMD_OUTPUT_LAUNCH_FILE "cmd_output.launch"
-#define CAN_NODE_LAUNCH_FILE "cmd_to_can.launch"
-#define SWEEP_NODE_LAUNCH_FILE "auto_sweep.launch"
-#define RVIZ_LAUNCH_FILE "rviz.launch"
-
+struct LaunchComponent {
+    QPushButton* button;
+    QProcess* process;
+    const char* launchFile;
+    bool launched;
+    QString buttonName;
+    
+    LaunchComponent(const char* file, QString name) 
+        : button(nullptr)
+        , process(nullptr)
+        , launchFile(file)
+        , launched(false)
+        , buttonName(std::move(name)) {}
+};
 
 class RoadSweeperGui : public QMainWindow
 {
@@ -37,74 +41,64 @@ public:
 	~RoadSweeperGui();
 
 private slots:
-	// Control tab
-	void toggleSetupLaunch();
-	void toggleMapLaunch();
-	void toggleLocalizationLaunch();
-	void togglePlanningLaunch();
-	void togglePerceptionLaunch();
-	void toggleLocalPlanningLaunch();
-	void toggleCmdOutputLaunch();
-	void toggleCanNodeLaunch();
-	void toggleSweepNodeLaunch();
+	// Control tab;
 	void controlAutoSweep();
 
-	// Display tab
-	void toggleRvizLaunch();
-
 private:
+	void initializeWidgets();
+    void setupLayouts();
+    void connectSignalsAndSlots();
+    void setupROS();
+
 	void toggleLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile);
-	/*=== Widgets ===*/
-	// Control tab
-	QPushButton *setupButton;
-	QPushButton *mapButton;
-	QPushButton *localizationButton;
-	QPushButton *globalPlanningButton;
-	QPushButton *perceptionButton;
-	QPushButton *localPlanningButton;
-	QPushButton *cmdOutputButton;
-	QPushButton *canNodeButton;
-	QPushButton *sweepNodeButton;
+
+	void closeLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile);
+	void startLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile);
+
+
+	enum class PanelName {
+    	CONTROL,
+    	DISPLAY
+	};
+
+    struct LaunchComponent {
+        QPushButton* button;			// Button to launch the process
+        QProcess* process;				// Process to launch
+        const char* launchFile;			// Launch file name
+        bool launched;					// Launched status
+        QString buttonName;
+        PanelName panel;
+        
+        LaunchComponent(const char* file, QString name, PanelName p) 
+            : button(nullptr)
+            , process(nullptr)
+            , launchFile(file)
+            , launched(false)
+            , buttonName(std::move(name))
+            , panel(p) {}
+    };
+
+	std::vector<LaunchComponent> launchComponents;
+
 	QCheckBox *autoSweepCheckBox;
-
-	// Display tab
-	QPushButton *rvizButton;
-
-	/*=== Processes ===*/
-	// Control tab
-	QProcess *setupProcess;
-	QProcess *mapProcess;
-	QProcess *localizationProcess;
-	QProcess *globalPlanningProcess;
-	QProcess *perceptionProcess;
-	QProcess *localPlanningProcess;
-	QProcess *cmdOutputProcess;
-	QProcess *canNodeProcess;
-	QProcess *sweepNodeProcess;
-	// Display tab
-	QProcess *rvizProcess;
 
 	/*=== ROS ===*/
 	ros::NodeHandle nh;
 	ros::ServiceClient client;
-
-	// Display tab
-
-	/*=== Launched flags ===*/
-	// Control tab
-	bool setupLaunched;
-	bool mapLaunched;
-	bool localizationLaunched;
-	bool globalPlanningLaunched;
-	bool perceptionLaunched;
-	bool localPlanningLaunched;
-	bool cmdOutputLaunched;
-	bool canNodeLaunched;
-	bool sweepNodeLaunched;
-
-	// Display tab
-	bool rvizLaunched;
 	
+	static constexpr const char* DEFAULT = "";
+    static constexpr const char* ACTIVE = "background-color: green";
+    static constexpr const char* ERROR = "background-color: red";
+
+	enum class LaunchStatus
+	{
+		ACTIVE,
+		ERROR,
+		DEFAULT
+	};
+
+	void updateLaunchStatus(QPushButton* button, LaunchStatus status);
+
 };
 
 #endif // ROAD_SWEEPER_GUI_HPP
