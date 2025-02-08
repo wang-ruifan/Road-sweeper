@@ -1,0 +1,54 @@
+<launch>
+    <!-- =============== Config arguments =============== -->
+    
+    <!-- Arguments' name        Arguments' value            Arguments' range/options            Description -->
+    
+    <!-- == Pure Pursuit == -->
+	<!-- Launch arguments -->
+	<arg name="Linear_Interpolation" default="false"/>		<!-- true, false -->				<!-- 是否启用线性插值 -->
+	<arg name="Publish_Topic_For_Steering_Robot" default="true"/>	<!-- true, false -->		<!-- 是否发布用于转向的话题 -->
+	<arg name="Add_Virtual_Waypoint" default="false"/>		<!-- true, false -->				<!-- 是否添加虚拟路径点 -->
+
+	<!-- Topic /config/waypoint_follower  arguments -->
+	<arg name="Param_Flag" default="0"/>					<!-- Waypoint=0, Dialog=1 -->
+	<arg name="Look_Ahead_Ratio" default="2.0"/>			<!-- 0.0 ~ 5.0 -->					<!-- 前视距离的速度比例系数 -->
+	<arg name="Minimum_Look_Ahead_Distance" default="3.0"/>	<!-- 0.0 ~ 20.0 -->					<!-- 最小前视距离 -->
+	<arg name="Displacement_Threshold" default="0"/>		<!-- 0.0 ~ 1.0 -->					<!-- 距离目标点的阈值 -->
+	<arg name="Relative_Angle_Threshold" default="0"/>		<!-- 0 ~ 90 -->						<!-- 相对角度的阈值 -->
+
+	<!-- == Twist Filter == -->
+	<!-- Launch arguments -->
+	<arg name="Use_Decision_Maker" default="false"/>		<!-- true, false -->				<!-- 是否使用决策器 -->
+
+	<!-- Topic /config/twist_filter  arguments -->
+	<arg name="Lateral_Accel_Limit" default="1.0"/>			<!-- 0.0 ~ 5.0 -->					<!-- 横向加速度限制 -->
+	<arg name="Lateral_Jerk_Limit" default="1.0"/>			<!-- 0.0 ~ 5.0 -->					<!-- 横向加加速度限制 -->
+	<arg name="Lowpass_Gain_Linear_X" default="0.0"/>		<!-- 0.0 ~ 1.0 -->
+	<arg name="Lowpass_Gain_Angular_Z" default="0.0"/>		<!-- 0.0 ~ 1.0 -->
+	<arg name="Lowpass_Gain_Steering_Angle" default="0.0"/>	<!-- 0.0 ~ 1.0 -->
+
+    <!-- =============== Launch =============== -->
+	<!-- === Pure Pursuit === -->
+	<include file="$(find pure_pursuit)/launch/pure_pursuit.launch">
+		<arg name="is_linear_interpolation" value="$(arg Linear_Interpolation)"/>
+		<arg name="publishes_for_steering_robot" value="$(arg Publish_Topic_For_Steering_Robot)"/>
+		<arg name="add_virtual_end_waypoints" value="$(arg Add_Virtual_Waypoint)"/>
+		<arg name="lookahead_ratio" value="$(arg Look_Ahead_Ratio)"/>
+		<arg name="minimum_lookahead_distance" value="$(arg Minimum_Look_Ahead_Distance)"/>
+		<arg name="velocity_source" value="$(arg Param_Flag)"/>
+	</include>
+    
+	<!-- === Twist Filter === -->
+	<include file="$(find twist_filter)/launch/twist_filter.launch">
+		<arg name="use_decision_maker" value="$(arg Use_Decision_Maker)"/>
+	</include>
+
+    <!-- ====== Config Set ====== -->
+
+	<!-- Publish pure pursuit config -->
+	<node pkg="rostopic" type="rostopic" name="config_pure_pursuit" args="pub --latch --once /config/waypoint_follower autoware_config_msgs/ConfigWaypointFollower '{param_flag: $(arg Param_Flag), lookahead_ratio: $(arg Look_Ahead_Ratio), minimum_lookahead_distance: $(arg Minimum_Look_Ahead_Distance), displacement_threshold: $(arg Displacement_Threshold), relative_angle_threshold: $(arg Relative_Angle_Threshold)}'"/>
+
+	<!-- Publish twist filter config -->
+	<node pkg="rostopic" type="rostopic" name="config_twist_filter" args="pub --latch --once /config/twist_filter autoware_config_msgs/ConfigTwistFilter '{lateral_accel_limit: $(arg Lateral_Accel_Limit), lateral_jerk_limit: $(arg Lateral_Jerk_Limit), lowpass_gain_linear_x: $(arg Lowpass_Gain_Linear_X), lowpass_gain_angular_z: $(arg Lowpass_Gain_Angular_Z), lowpass_gain_steering_angle: $(arg Lowpass_Gain_Steering_Angle)}'"/>
+
+</launch>

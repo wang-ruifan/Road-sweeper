@@ -1,0 +1,7 @@
+<launch>
+
+	<node pkg="socketcan_bridge" name="topic_to_socketcan_node" type="topic_to_socketcan_node" output="screen"></node>
+
+	<node pkg="road_sweeper" name="auto_sweep_node" type="auto_sweep_node" output="screen"></node>
+
+</launch>

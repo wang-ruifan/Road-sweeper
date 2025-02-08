@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QPushButton>
+#include <QCheckBox>
 #include <QVBoxLayout>
 #include <QTextEdit>
 #include <QProcess>
@@ -27,6 +28,10 @@ private slots:
 	void toggleLocalizationLaunch();
 	void togglePlanningLaunch();
 	void togglePerceptionLaunch();
+	void toggleLocalPlanningLaunch();
+	void toggleCmdOutputLaunch();
+	void toggleCanNodeLaunch();
+	void toggleSweepNodeLaunch();
 	void controlAutoSweep();
 
 private:
@@ -35,15 +40,24 @@ private:
 	QPushButton *setupButton;
 	QPushButton *mapButton;
 	QPushButton *localizationButton;
-	QPushButton *planningButton;
+	QPushButton *globalPlanningButton;
 	QPushButton *perceptionButton;
-	QPushButton *controlButton;
+	QPushButton *localPlanningButton;
+	QPushButton *cmdOutputButton;
+	QPushButton *canNodeButton;
+	QPushButton *sweepNodeButton;
+
+	QCheckBox *autoSweepCheckBox;
 
 	QProcess *setupProcess;
 	QProcess *mapProcess;
 	QProcess *localizationProcess;
-	QProcess *planningProcess;
+	QProcess *globalPlanningProcess;
 	QProcess *perceptionProcess;
+	QProcess *localPlanningProcess;
+	QProcess *cmdOutputProcess;
+	QProcess *canNodeProcess;
+	QProcess *sweepNodeProcess;
 
 	ros::NodeHandle nh;
 	ros::ServiceClient client;
@@ -51,10 +65,12 @@ private:
 	bool setupLaunched;
 	bool mapLaunched;
 	bool localizationLaunched;
-	bool planningLaunched;
+	bool globalPlanningLaunched;
 	bool perceptionLaunched;
-
-	bool autoSweepEnabled;
+	bool localPlanningLaunched;
+	bool cmdOutputLaunched;
+	bool canNodeLaunched;
+	bool sweepNodeLaunched;
 };
 
 #endif // ROAD_SWEEPER_GUI_HPP

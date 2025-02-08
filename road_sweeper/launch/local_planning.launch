@@ -1,0 +1,94 @@
+<launch>
+    <!-- =============== Config arguments =============== -->
+    
+    <!-- Arguments' name        Arguments' value            Arguments' range/options            Description -->
+    
+    <!-- == OpenPlanner Local Planner Common Params == -->
+    <!-- 局部路径相关参数 -->
+    <arg name="Horizon" default="120.0" />                  <!-- 1.0 ~ 250.0 -->
+    <arg name="Plan_Distance" default="6.0" />              <!-- 0.01 ~ 5.0 -->                 <!-- 主路径两侧的局部路径的长度 -->
+    <arg name="Path_Density" default="0.5" />               <!-- 0.01 ~ 5.0 -->                 <!-- 局部路径上两个轨迹点的距离 -->
+    <arg name="Horizontal_Density" default="0.5" />         <!-- 0.01 ~ 5.0 -->                 <!-- 局部路径的间距 -->
+    <arg name="Roll_Outs_Number" default="4" />             <!-- 0 ~ 20 -->                     <!-- 局部路径的数量 -->
+    <!-- 速度相关参数 -->
+    <arg name="Max_Velocity" default="3.0" />               <!-- -1.0 ~ 20.0 -->                <!-- 最大速度 -->
+    <arg name="Acceleration" default="3.0" />               <!-- 0.01 ~ 25.0 -->                <!-- 最大加速度 -->
+    <arg name="Deceleration" default="-3.0" />              <!-- -25.0 ~ -0.01 -->              <!-- 最大减速度 -->
+    <!-- 跟随和避障相关参数 -->
+    <arg name="Enable_Following" default="true" />          <!-- true, false -->                <!-- 是否启用停止和跟随物体 -->
+    <arg name="Enable_Avoidance" default="true" />          <!-- true, false -->                <!-- 是否启用避障 -->
+    <arg name="Follow_Distance" default="3.0" />            <!-- 0.5 ~ 100.0 -->                <!-- 距离前方物体此距离时开始跟随 -->
+    <arg name="Avoiding_Distance" default="2.0" />          <!-- 0.1 ~ 80.0 -->                 <!-- 距离障碍物此距离时开始避障 -->
+    <arg name="Avoidance_Limit" default="0.5" />            <!-- 0.5 ~ 60.0 -->                 <!-- 距离障碍物此距离时放弃避障，直接停车 -->
+    <!-- 交通标志和变道参数 -->
+    <arg name="Enable_Stop_Sign_Stop" default="false" />    <!-- true, false -->                <!-- 是否启用在停止标志处停车 -->
+    <arg name="Enable_Traffic_Light" default="false" />     <!-- true, false -->                <!-- 是否启用红绿灯检查 -->
+    <arg name="Enable_Lane_Change" default="false" />       <!-- true, false -->                <!-- 是否启用车道变更 -->
+    <!-- 车辆安全框参数，障碍物在安全框内时停止移动 -->
+    <arg name="Lateral_Safety" default="1.0" />             <!-- 0.0 ~ 10.0 -->                 <!-- 车辆横向安全距离，安全框的宽度 -->
+    <arg name="Longitudinal_Safety" default="1.0" />        <!-- 0.0 ~ 25.0 -->                 <!-- 车辆纵向安全距离，安全框的长度 -->
+    <!-- 地图来源 -->
+    <arg name="map_Source" default="0" />                   <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
+
+    <!-- == OpenPlanner Local Planner Trajectory Generator == -->
+    <arg name="Tip_Margin" default="2.0" />                 <!-- 0 ~ 10 -->                     <!-- 车身到局部路径分叉点的距离 -->
+    <arg name="Roll_In_Margin" default="3.0" />             <!-- 0 ~ 40 -->                     <!-- 局部路径分叉部分的距离 -->
+
+    <!-- == OpenPlanner Local Planner Motion Predictor == -->
+    <arg name="Detect_Curbs_From_Map" value="true" />       <!-- true, false -->                <!-- 是否从地图中检测路沿当作障碍物 -->
+    <arg name="Enable_Branching" value="false" />           <!-- true, false -->                <!-- 是否启用在道路网络地图外规划局部路径分支 -->
+    <arg name="Distance_To_Closest_Lane" value="0.5" />     <!-- 0.0 ~ 10.0 -->
+    <arg name="Prediction_Distance" value="25.0" />         <!-- 1.0 ~ 75.0 -->
+    <arg name="Enable_Step_By_Step_Test" value="false" />   <!-- true, false -->                <!-- 是否启用逐步测试 -->
+    <arg name="Enable_Particle_Filter_Prediction" value="false" /> <!-- true, false -->
+
+    <!-- == OpenPlanner Local Planner Trajectory Evaluator == -->
+    <arg name="Enable_Prediction" value="true" />           <!-- true, false -->                <!-- 是否启用预测 -->
+
+    <!-- =============== Launch =============== -->
+
+    <!-- === OpenPlanner Common Params === -->
+    <include file="$(find op_local_planner)/launch/op_common_params.launch">
+        <arg name="horizonDistance" value="$(arg Horizon)" />
+        <arg name="maxLocalPlanDistance" value="$(arg Plan_Distance)" />
+        <arg name="pathDensity" value="$(arg Path_Density)" />
+        <arg name="rollOutDensity" value="$(arg Horizontal_Density)" />
+        <arg name="rollOutsNumber" value="$(arg Roll_Outs_Number)" />
+        <arg name="maxVelocity" value="$(arg Max_Velocity)" />
+        <arg name="maxAcceleration" value="$(arg Acceleration)" />
+        <arg name="maxDeceleration" value="$(arg Deceleration)" />
+        <arg name="enableFollowing" value="$(arg Enable_Following)" />
+        <arg name="enableSwerving" value="$(arg Enable_Avoidance)" />
+        <arg name="minFollowingDistance" value="$(arg Follow_Distance)" />
+        <arg name="minDistanceToAvoid" value="$(arg Avoiding_Distance)" />
+        <arg name="maxDistanceToAvoid" value="$(arg Avoidance_Limit)" />
+        <arg name="enableStopSignBehavior" value="$(arg Enable_Stop_Sign_Stop)" />
+        <arg name="enableTrafficLightBehavior" value="$(arg Enable_Traffic_Light)" />
+        <arg name="enableLaneChange" value="$(arg Enable_Lane_Change)" />
+        <arg name="horizontalSafetyDistance" value="$(arg Lateral_Safety)" />
+        <arg name="verticalSafetyDistance" value="$(arg Longitudinal_Safety)" />
+        <arg name="mapSource" value="$(arg map_Source)" />
+    </include>
+
+    <!-- === OpenPlanner Trajectory Generator === -->
+    <include file="$(find op_local_planner)/launch/op_trajectory_generator.launch">
+        <arg name="samplingTipMargin" value="$(arg Tip_Margin)" />
+        <arg name="samplingOutMargin" value="$(arg Roll_In_Margin)" />
+    </include>
+
+    <!-- === OpenPlanner Motion Predictor === -->
+    <include file="$(find op_local_planner)/launch/op_motion_predictor.launch">
+        <arg name="enableCurbObstacles" value="$(arg Detect_Curbs_From_Map)" />
+        <arg name="enableGenrateBranches" value="$(arg Enable_Branching)" />
+        <arg name="max_distance_to_lane" value="$(arg Distance_To_Closest_Lane)" />
+        <arg name="prediction_distance" value="$(arg Prediction_Distance)" />
+        <arg name="enableStepByStepSignal" value="$(arg Enable_Step_By_Step_Test)" />
+        <arg name="enableParticleFilterPrediction" value="$(arg Enable_Particle_Filter_Prediction)" />
+    </include>
+
+    <!-- === OpenPlanner Trajectory Evaluator === -->
+    <include file="$(find op_local_planner)/launch/op_trajectory_evaluator.launch">
+        <arg name="enablePrediction" value="$(arg Enable_Prediction)" />
+    </include>
+    
+</launch>

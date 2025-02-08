@@ -45,7 +45,7 @@
     <arg name="vehicle_width" default="1.85"/>                    <!-- 1.0 ~ 3.0 -->
     <arg name="vehicle_length" default="4.2"/>                    <!-- 2.0 ~ 10.0 -->
 
-    <!-- =============== Nodes start =============== -->
+    <!-- =============== Launch =============== -->
 
     <!-- ==== Lidar Euclidean Cluster Detect ==== -->
     <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch">
