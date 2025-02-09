@@ -1,6 +1,8 @@
 #include "road_sweeper_gui.hpp"
 #include <QApplication>
 
+using namespace ButtonStyle;
+
 RoadSweeperGui::RoadSweeperGui(QWidget *parent)
     : QMainWindow(parent)
     , launchComponents{
@@ -41,6 +43,39 @@ void RoadSweeperGui::initializeWidgets()
     }
     // Checkboxes
     autoSweepCheckBox = new QCheckBox("Auto Sweep", this);
+
+    // Speed Display
+    speedLabel = new QLabel("Speed:", this);
+    speedLabel->setStyleSheet("QLabel { font-size: 14pt; }");
+    speedDisplay = new QLCDNumber(this);
+    speedDisplay->setDigitCount(6);
+    speedDisplay->setSmallDecimalPoint(true);
+    speedDisplay->setSegmentStyle(QLCDNumber::Flat);
+    speedDisplay->setStyleSheet("QLCDNumber { background-color: white; color: green; }");
+    unitLabel = new QLabel("km/h", this);
+    unitLabel->setStyleSheet("QLabel { font-size: 14pt; }");
+
+    // Battery Display
+    batteryLabel = new QLabel("Battery:", this);
+    batteryLabel->setStyleSheet("QLabel { font-size: 14pt; }");
+    batteryBar = new QProgressBar(this);
+    batteryBar->setRange(0, 100);
+    batteryBar->setTextVisible(true);
+    batteryBar->setFormat("%p%");
+    batteryBar->setStyleSheet(
+        "QProgressBar {"
+        "   border: 2px solid grey;"
+        "   border-radius: 5px;"
+        "   text-align: center;"
+        "}"
+        "QProgressBar::chunk {"
+        "   background-color: #05B8CC;"
+        "   width: 20px;"
+        "}"
+    );
+    
+    currentSpeed = 5.25;
+    batteryLevel = 100;
 }
 
 void RoadSweeperGui::setupLayouts()
@@ -49,7 +84,23 @@ void RoadSweeperGui::setupLayouts()
     QHBoxLayout *mainLayout = new QHBoxLayout;
     QVBoxLayout *controlPanel = new QVBoxLayout;
     QVBoxLayout *displayPanel = new QVBoxLayout;
+
+    // Battery layout setup
+    QHBoxLayout *batteryLayout = new QHBoxLayout;
+    batteryLayout->addWidget(batteryLabel);
+    batteryLayout->addWidget(batteryBar);
     
+    // Speed layout setup
+    QHBoxLayout *speedLayout = new QHBoxLayout;
+    speedLayout->addWidget(speedLabel);
+    speedLayout->addWidget(speedDisplay,3);
+    speedLayout->addWidget(unitLabel);
+
+    // Add speed and battery layouts to display panel
+    displayPanel->addLayout(batteryLayout);
+    displayPanel->addLayout(speedLayout);
+    displayPanel->addStretch();
+
     for(const auto& component : launchComponents) {
         if (component.panel == PanelName::CONTROL) {
             /*=== Control panel ===*/
@@ -76,6 +127,8 @@ void RoadSweeperGui::setupLayouts()
     QWidget *centralWidget = new QWidget(this);
     centralWidget->setLayout(mainLayout);
     setCentralWidget(centralWidget);
+
+    updateDisplays();
 }
 
 void RoadSweeperGui::connectSignalsAndSlots()
@@ -107,9 +160,53 @@ void RoadSweeperGui::connectSignalsAndSlots()
 void RoadSweeperGui::setupROS()
 {
     /*====== ROS setup ======*/
-    // Create service client
     nh = ros::NodeHandle();
+    // Create service client
     client = nh.serviceClient<std_srvs::SetBool>("enable_auto_sweep");
+    // Create subscriber
+    canSubscriber = nh.subscribe("/received_messages", 10, 
+                               &RoadSweeperGui::canCallback, this);
+}
+
+void RoadSweeperGui::canCallback(const can_msgs::Frame::ConstPtr& msg)
+{
+    // Speed data message ID: 0x503
+    if(msg->id == 0x503)
+    {
+        currentSpeed = (msg->data[2]);
+        updateDisplays();
+    }
+    // Battery data message ID: 0x504
+    else if(msg->id == 0x504)
+    {
+        batteryLevel = msg->data[1];
+        updateDisplays();
+    }
+}
+
+void RoadSweeperGui::updateDisplays()
+{
+    speedDisplay->display(QString::number(currentSpeed, 'f', 3));
+    batteryBar->setValue(batteryLevel);
+    
+    QString barStyle = 
+        "QProgressBar {"
+        "   border: 2px solid grey;"
+        "   border-radius: 5px;"
+        "   text-align: center;"
+        "}"
+        "QProgressBar::chunk {";
+        
+    if(batteryLevel <= 20) {
+        barStyle += "background-color: red;";
+    } else if(batteryLevel <= 50) {
+        barStyle += "background-color: orange;";
+    } else {
+        barStyle += "background-color:rgb(5, 204, 38);";
+    }
+    
+    barStyle += "width: 20px;}";
+    batteryBar->setStyleSheet(barStyle);
 }
 
 void RoadSweeperGui::closeLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile)
@@ -182,14 +279,14 @@ void RoadSweeperGui::updateLaunchStatus(QPushButton* button, LaunchStatus status
 {
     switch (status) {
         case LaunchStatus::ACTIVE:
-            button->setStyleSheet(ACTIVE);
+            button->setStyleSheet(ButtonStyle::ACTIVE);
             break;
         case LaunchStatus::ERROR:
-            button->setStyleSheet(ERROR);
+            button->setStyleSheet(ButtonStyle::ERROR);
             break;
         case LaunchStatus::DEFAULT:
         default:
-            button->setStyleSheet(DEFAULT);
+            button->setStyleSheet(ButtonStyle::DEFAULT);
             break;
     }
 }
