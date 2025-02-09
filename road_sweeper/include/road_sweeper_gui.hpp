@@ -12,6 +12,7 @@
 #include <QProcess>
 #include <QString>
 #include <QDebug>
+#include <QFile>
 #include <ros/ros.h>
 #include <std_srvs/SetBool.h>
 #include <thread>
@@ -20,6 +21,7 @@
 #include <vector>
 #include <memory>
 #include <can_msgs/Frame.h>
+#include "car_widget.hpp"
 
 namespace ButtonStyle {
         const QString DEFAULT = "";
@@ -52,6 +54,14 @@ private:
 		DEFAULT
 	};
 
+    enum class UpdateType
+    {
+        SPEED,
+        ANGLE,
+        BATTERY,
+        ALL
+    };
+
     struct LaunchComponent {
         QPushButton* button;			// Button to launch the process
         QProcess* process;				// Process to launch
@@ -69,6 +79,10 @@ private:
             , panel(p) {}
     };
 
+    void initializeSpeedDisplay();
+    void initializeBatteryDisplay();
+    void initializeCarWidget();
+
 	void initializeWidgets();
     void setupLayouts();
     void connectSignalsAndSlots();
@@ -84,7 +98,10 @@ private:
     void toggleAutoSweep(LaunchComponent &component);
 
     void canCallback(const can_msgs::Frame::ConstPtr& msg);
-    void updateDisplays();
+    void updateDisplays(UpdateType type);
+    void updateSpeed();
+    void updateBattery();
+    void updateCarWidget();
 
 	std::vector<LaunchComponent> launchComponents;
 
@@ -97,13 +114,14 @@ private:
     QLabel *batteryLabel;
     double currentSpeed;
     int batteryLevel;
+    double currentAngle;
+
+    CarWidget* carWidget;
 
 	/*=== ROS ===*/
 	ros::NodeHandle nh;
 	ros::ServiceClient client;
     ros::Subscriber canSubscriber;
-
-
 };
 
 #endif // ROAD_SWEEPER_GUI_HPP

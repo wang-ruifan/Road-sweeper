@@ -37,6 +37,8 @@ target_link_libraries(cmd_to_can_node ${catkin_LIBRARIES})
 set(road_sweeper_gui_SRCS
   src/road_sweeper_gui.cpp
   include/road_sweeper_gui.hpp
+  src/car_widget.cpp
+  include/car_widget.hpp
 )
 
 add_executable(road_sweeper_gui ${road_sweeper_gui_SRCS})
@@ -64,4 +66,8 @@ install(DIRECTORY launch/
 
 install(DIRECTORY config/
 	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config
+)
+
+install(DIRECTORY resources/
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/resources
 )

@@ -34,17 +34,8 @@ RoadSweeperGui::~RoadSweeperGui()
     }
 }
 
-void RoadSweeperGui::initializeWidgets()
+void RoadSweeperGui::initializeSpeedDisplay()
 {
-    /*====== Widget initialization ======*/
-    // Buttons
-    for(auto& component : launchComponents) {
-        component.button = new QPushButton(component.buttonName, this);
-    }
-    // Checkboxes
-    autoSweepCheckBox = new QCheckBox("Auto Sweep", this);
-
-    // Speed Display
     speedLabel = new QLabel("Speed:", this);
     speedLabel->setStyleSheet("QLabel { font-size: 14pt; }");
     speedDisplay = new QLCDNumber(this);
@@ -52,10 +43,13 @@ void RoadSweeperGui::initializeWidgets()
     speedDisplay->setSmallDecimalPoint(true);
     speedDisplay->setSegmentStyle(QLCDNumber::Flat);
     speedDisplay->setStyleSheet("QLCDNumber { background-color: white; color: green; }");
+    speedDisplay->setMinimumSize(150, 50);
     unitLabel = new QLabel("km/h", this);
     unitLabel->setStyleSheet("QLabel { font-size: 14pt; }");
+}
 
-    // Battery Display
+void RoadSweeperGui::initializeBatteryDisplay()
+{
     batteryLabel = new QLabel("Battery:", this);
     batteryLabel->setStyleSheet("QLabel { font-size: 14pt; }");
     batteryBar = new QProgressBar(this);
@@ -73,9 +67,44 @@ void RoadSweeperGui::initializeWidgets()
         "   width: 20px;"
         "}"
     );
+}
+
+void RoadSweeperGui::initializeCarWidget()
+{
+    carWidget = new CarWidget(this);
+    carWidget->setLineLength(50);
+
+    QString execPath = QApplication::applicationDirPath();    
+    QString imagePath = execPath + "/../../share/road_sweeper/resources/car.png";
     
-    currentSpeed = 5.25;
+    if(!QFile::exists(imagePath)) {
+        qDebug() << "Car image not found at:" << imagePath;
+    }
+    carWidget->setCarImage(imagePath);
+}
+
+void RoadSweeperGui::initializeWidgets()
+{
+    /*====== Widget initialization ======*/
+    // Buttons
+    for(auto& component : launchComponents) {
+        component.button = new QPushButton(component.buttonName, this);
+    }
+    // Checkboxes
+    autoSweepCheckBox = new QCheckBox("Auto Sweep", this);
+
+    // Speed Display
+    initializeSpeedDisplay();
+
+    // Battery Display
+    initializeBatteryDisplay();
+
+    // Car Widget
+    initializeCarWidget();
+    
+    currentSpeed = 0.00;
     batteryLevel = 100;
+    currentAngle = 00.0;
 }
 
 void RoadSweeperGui::setupLayouts()
@@ -96,10 +125,11 @@ void RoadSweeperGui::setupLayouts()
     speedLayout->addWidget(speedDisplay,3);
     speedLayout->addWidget(unitLabel);
 
-    // Add speed and battery layouts to display panel
-    displayPanel->addLayout(batteryLayout);
-    displayPanel->addLayout(speedLayout);
-    displayPanel->addStretch();
+    // Add speed，car and battery to display panel
+    displayPanel->addLayout(batteryLayout, 1);
+    displayPanel->addWidget(carWidget, 3);
+    displayPanel->addLayout(speedLayout, 3);
+    displayPanel->setSpacing(10);
 
     for(const auto& component : launchComponents) {
         if (component.panel == PanelName::CONTROL) {
@@ -115,7 +145,7 @@ void RoadSweeperGui::setupLayouts()
             }
         } else {
             /*=== Display panel ===*/
-            displayPanel->addWidget(component.button);
+            displayPanel->addWidget(component.button, 1);
         }
     }
 
@@ -128,7 +158,7 @@ void RoadSweeperGui::setupLayouts()
     centralWidget->setLayout(mainLayout);
     setCentralWidget(centralWidget);
 
-    updateDisplays();
+    updateDisplays(UpdateType::ALL);
 }
 
 void RoadSweeperGui::connectSignalsAndSlots()
@@ -150,7 +180,7 @@ void RoadSweeperGui::connectSignalsAndSlots()
                                launchComponents[i].launched, 
                                launchComponents[i].launchFile);
                 });
-        }
+            }
     }
     
     // Checkboxes
@@ -168,27 +198,46 @@ void RoadSweeperGui::setupROS()
                                &RoadSweeperGui::canCallback, this);
 }
 
-void RoadSweeperGui::canCallback(const can_msgs::Frame::ConstPtr& msg)
+ void RoadSweeperGui::canCallback(const can_msgs::Frame::ConstPtr& msg)
 {
     // Speed data message ID: 0x503
     if(msg->id == 0x503)
     {
-        currentSpeed = (msg->data[2]);
-        updateDisplays();
+        double speed = msg->data[2];
+        if(speed != currentSpeed) {
+            currentSpeed = speed;
+            updateDisplays(UpdateType::SPEED);
+        }
+    }
+    // Angle data message ID: 0x502
+    else if(msg->id == 0x502)
+    {
+        double angle = (msg->data[1] << 8) | msg->data[2];
+        if(angle != currentAngle) {
+            currentAngle = angle;
+            updateDisplays(UpdateType::ANGLE);
+        }
     }
     // Battery data message ID: 0x504
     else if(msg->id == 0x504)
     {
-        batteryLevel = msg->data[1];
-        updateDisplays();
+        int level = msg->data[0];
+        if(level != batteryLevel) {
+            batteryLevel = level;
+            updateDisplays(UpdateType::BATTERY);
+        }
     }
 }
 
-void RoadSweeperGui::updateDisplays()
+void RoadSweeperGui::updateSpeed()
 {
     speedDisplay->display(QString::number(currentSpeed, 'f', 3));
+}
+
+void RoadSweeperGui::updateBattery()
+{
     batteryBar->setValue(batteryLevel);
-    
+
     QString barStyle = 
         "QProgressBar {"
         "   border: 2px solid grey;"
@@ -208,6 +257,30 @@ void RoadSweeperGui::updateDisplays()
     barStyle += "width: 20px;}";
     batteryBar->setStyleSheet(barStyle);
 }
+
+void RoadSweeperGui::updateCarWidget()
+{
+    carWidget->setAngle(currentAngle);
+}
+void RoadSweeperGui::updateDisplays(UpdateType type)
+{
+    switch(type) {
+        case UpdateType::SPEED:
+            updateSpeed();
+            break;
+        case UpdateType::ANGLE:
+            updateCarWidget();
+            break;
+        case UpdateType::BATTERY:
+            updateBattery();
+            break;
+        case UpdateType::ALL:
+            updateSpeed();
+            updateBattery();
+            updateCarWidget();
+            break;
+    }
+} 
 
 void RoadSweeperGui::closeLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile)
 {
