@@ -10,17 +10,28 @@
 #include <limits>
 #include <cmath>
 #include <std_srvs/SetBool.h>
+#include <std_msgs/Bool.h>
 
 class AutoSweep
 {
+private:
+    // 可配置参数
+    double search_threshold_;  // 搜索阈值：当车辆移动距离超过此值时重新搜索最近车道
+
 public:
     AutoSweep()
     {
+        // 从参数服务器获取搜索阈值参数
+        ros::NodeHandle private_nh("~");
+        private_nh.param("search_threshold", search_threshold_, 0.5);
+        ROS_INFO("Search threshold set to: %.2f meters", search_threshold_);
+
         lane_sub_ = nh_.subscribe("/vector_map_info/lane", 10, &AutoSweep::laneCallback, this);
         node_sub_ = nh_.subscribe("/vector_map_info/node", 10, &AutoSweep::nodeCallback, this);
         point_sub_ = nh_.subscribe("/vector_map_info/point", 10, &AutoSweep::pointCallback, this);
         pose_sub_ = nh_.subscribe("/current_pose", 10, &AutoSweep::poseCallback, this);
         marker_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("lane_markers", 1, true);
+        sweep_pub_ = nh_.advertise<std_msgs::Bool>("sweep_control", 1);
         enable_service_ = nh_.advertiseService("enable_auto_sweep", &AutoSweep::enableCallback, this);
     }
 
@@ -35,7 +46,6 @@ private:
         std::vector<double> end_coords;
     };
 
-    // 添加新的成员变量
     struct LastPoseInfo {
         double x;
         double y;
@@ -44,20 +54,20 @@ private:
         bool valid;
     } last_pose_;
     
-    const double SEARCH_THRESHOLD = 0.5; // 移动超过0.5米才重新搜索
-
     ros::NodeHandle nh_;
     ros::Subscriber lane_sub_;
     ros::Subscriber node_sub_;
     ros::Subscriber point_sub_;
     ros::Subscriber pose_sub_;
     ros::Publisher marker_pub_;
+    ros::Publisher sweep_pub_;
     ros::ServiceServer enable_service_;
 
     std::unordered_map<int, LaneData> lanes_;
     std::unordered_map<int, int> nodes_;
 
     bool enable_auto_sweep_ = true;
+    bool sweep_status_ = false;
 
     std::unordered_map<int, std::vector<int>> lane_connections_;
 
@@ -127,8 +137,9 @@ private:
     }
 
     // 优化后的相邻车道搜索逻辑
-    void searchNearbyLanes(double current_x, double current_y, int current_lane_id,
-                          double& min_distance, int& closest_lane_id)
+    void searchNearbyLanes(const double& current_x, const double& current_y, 
+                      const int current_lane_id,
+                      double& min_distance, int& closest_lane_id)
     {
         std::vector<int> lanes_to_check;
         
@@ -163,110 +174,172 @@ private:
         }
     }
 
-    void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
+    // 处理位置更新的主要逻辑
+    void handlePoseUpdate(const geometry_msgs::PoseStamped::ConstPtr &msg, 
+                        bool& is_sweep)
     {
-        ros::Time total_start_time = ros::Time::now();
-        ros::Time section_time;
-
-        if (!enable_auto_sweep_)
-        {
-            return;
-        }
-
         double current_x = msg->pose.position.x;
         double current_y = msg->pose.position.y;
 
-        // 如果有上次的位置信息，且车辆移动距离小于阈值，直接使用缓存的结果
-        section_time = ros::Time::now();
-        if (last_pose_.valid)
+        // 检查是否需要重新搜索
+        if (shouldPerformNewSearch(current_x, current_y))
         {
-            double move_distance = calculateDistance(current_x, current_y, 
-                                                  last_pose_.x, last_pose_.y);
-            if (move_distance < SEARCH_THRESHOLD)
-            {
-                // 直接使用上次的结果
-                const auto& lane_data = lanes_[last_pose_.lane_id];
-                ros::Duration cache_time = ros::Time::now() - section_time;
-                ros::Duration total_time = ros::Time::now() - total_start_time;
-                ROS_INFO("Cache hit! Lane ID: %d, issweep: %d, distance: %f, move distance: %f\nExecution time: %.3f ms (Cache check: %.3f ms)",
-                        last_pose_.lane_id, lane_data.issweep, last_pose_.distance, move_distance, 
-                        cache_time.toSec() * 1000, total_time.toSec() * 1000);
-                return;
-            }
+            performLaneSearch(current_x, current_y, is_sweep);
         }
+        else
+        {
+            // 使用缓存的结果
+            useCachedResult(is_sweep);
+        }
+    }
 
+    // 检查是否需要执行新的搜索
+    bool shouldPerformNewSearch(double current_x, double current_y) const
+    {
+        if (!last_pose_.valid)
+            return true;
+
+        double move_distance = calculateDistance(current_x, current_y, 
+                                              last_pose_.x, last_pose_.y);
+        return move_distance >= search_threshold_;
+    }
+
+    // 执行车道搜索
+    void performLaneSearch(double current_x, double current_y, bool& is_sweep)
+    {
         double min_distance = std::numeric_limits<double>::max();
         int closest_lane_id = -1;
 
-        // 如果有上次的位置信息，优先检查相邻车道
-        section_time = ros::Time::now();
+        // 1. 先搜索相邻车道
         if (last_pose_.valid)
         {
             searchNearbyLanes(current_x, current_y, last_pose_.lane_id,
                             min_distance, closest_lane_id);
-        }
-        ros::Duration nearby_search_time = ros::Time::now() - section_time;
-
-        // 如果在相邻车道中没有找到更近的，进行全局搜索
-        section_time = ros::Time::now();
-        if (closest_lane_id == -1 || min_distance >= SEARCH_THRESHOLD)
-        {
-            for (const auto &lane : lanes_)
+            if (closest_lane_id != -1 && min_distance < search_threshold_)
             {
-                const auto &lane_data = lane.second;
-                if (!lane_data.start_coords.empty() && !lane_data.end_coords.empty())
+                updateLastPose(current_x, current_y, closest_lane_id, min_distance);
+                if(lanes_.at(closest_lane_id).issweep == 1) {
+                    is_sweep = true;
+                }
+                return;
+            }
+        }
+
+        // 2. 如果相邻车道搜索失败，执行全局搜索
+        performGlobalSearch(current_x, current_y, min_distance, closest_lane_id, is_sweep);
+    }
+
+    // 执行全局车道搜索
+    void performGlobalSearch(double current_x, double current_y,
+                           double& min_distance, int& closest_lane_id,
+                           bool& is_sweep)
+    {
+        for (const auto &lane : lanes_)
+        {
+            const auto &lane_data = lane.second;
+            if (!lane_data.start_coords.empty() && !lane_data.end_coords.empty())
+            {
+                double distance = calculateDistance(current_x, current_y,
+                                                 lane_data.start_coords[0],
+                                                 lane_data.start_coords[1]);
+                if (distance < min_distance)
                 {
-                    double distance = calculateDistance(current_x, current_y,
-                                                     lane_data.start_coords[0],
-                                                     lane_data.start_coords[1]);
-                    if (distance < min_distance)
-                    {
-                        min_distance = distance;
-                        closest_lane_id = lane_data.lnid;
-                    }
+                    min_distance = distance;
+                    closest_lane_id = lane_data.lnid;
                 }
             }
-            ROS_INFO("Searched all lanes");
-        } else {
-            ROS_INFO("Searched nearby lanes");
         }
-        ros::Duration global_search_time = ros::Time::now() - section_time;
 
-        section_time = ros::Time::now();
         if (closest_lane_id != -1)
         {
-            // 更新缓存
-            last_pose_.x = current_x;
-            last_pose_.y = current_y;
-            last_pose_.lane_id = closest_lane_id;
-            last_pose_.distance = min_distance;
-            last_pose_.valid = true;
-
-            const auto &lane_data = lanes_[closest_lane_id];
-            ROS_INFO("Closest Lane ID: %d, issweep: %d, distance: %f",
-                    closest_lane_id, lane_data.issweep, min_distance);
-            ROS_INFO("Current Pose: x: %f, y: %f\n Lane start: x: %f, y: %f; end: x: %f, y: %f",
-                    current_x, current_y,
-                    lane_data.start_coords[0], lane_data.start_coords[1],
-                    lane_data.end_coords[0], lane_data.end_coords[1]);
+            updateLastPose(current_x, current_y, closest_lane_id, min_distance);
+            if(lanes_.at(closest_lane_id).issweep == 1) {
+                is_sweep = true;
+            }
         }
         else
         {
             last_pose_.valid = false;
-            ROS_WARN("No valid lane found.");
+            ROS_WARN("No valid lane found in global search");
         }
-        ros::Duration update_time = ros::Time::now() - section_time;
-
-        // 输出详细的时间统计
-        ros::Duration total_time = ros::Time::now() - total_start_time;
-        ROS_INFO("PoseCallback timing breakdown (ms):");
-        ROS_INFO("- Nearby search: %.3f", nearby_search_time.toSec() * 1000);
-        ROS_INFO("- Global search: %.3f", global_search_time.toSec() * 1000);
-        ROS_INFO("- Cache update: %.3f", update_time.toSec() * 1000);
-        ROS_INFO("- Total time: %.3f", total_time.toSec() * 1000);
     }
 
-    void publishLaneMarkers()
+    // 更新上次位置信息
+    void updateLastPose(double current_x, double current_y, 
+                       int lane_id, double distance)
+    {
+        last_pose_.x = current_x;
+        last_pose_.y = current_y;
+        last_pose_.lane_id = lane_id;
+        last_pose_.distance = distance;
+        last_pose_.valid = true;
+
+        const auto &lane_data = lanes_[lane_id];
+        ROS_INFO("Updated position - Lane ID: %d, distance: %.2f m, issweep: %d",
+                 lane_id, distance, lane_data.issweep);
+    }
+
+    // 使用缓存的结果
+    void useCachedResult(bool &is_sweep) const
+    {
+        const auto& lane_data = lanes_.at(last_pose_.lane_id);
+        ROS_INFO("Using cached result - Lane ID: %d, issweep: %d, distance: %.2f m",
+                 last_pose_.lane_id, lane_data.issweep, last_pose_.distance);
+        if (lane_data.issweep == 1) {
+            is_sweep = true;
+        }
+    }
+
+    void sweepUpdate(bool is_sweep)
+    {
+        if(is_sweep != sweep_status_) {
+            std_msgs::Bool msg;
+            msg.data = is_sweep;
+            sweep_pub_.publish(msg);
+            sweep_status_ = is_sweep;
+            ROS_INFO("Sweep status changed to: %s", is_sweep ? "ON" : "OFF");
+        }
+    }
+
+
+    void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
+    {
+        try {
+            if (!enable_auto_sweep_) {
+                return;
+            }
+
+            if (!msg) {
+                ROS_WARN("Received null pose message");
+                return;
+            }
+            
+            if (lanes_.empty()) {
+                ROS_WARN_THROTTLE(1, "No lanes data available");
+                return;
+            }
+
+            ros::Time start_time = ros::Time::now();
+            
+            bool is_sweep = false;
+
+            // 执行主要搜索逻辑
+            handlePoseUpdate(msg, is_sweep);
+
+            // 更新清扫状态
+            sweepUpdate(is_sweep);
+
+            // 记录处理时间
+            ros::Duration processing_time = ros::Time::now() - start_time;
+            ROS_DEBUG("Pose processing time: %.3f ms", 
+                     processing_time.toSec() * 1000);
+
+        } catch (const std::exception& e) {
+            ROS_ERROR("Error in poseCallback: %s", e.what());
+        }
+    }
+
+    void publishLaneMarkers() const
     {
         visualization_msgs::MarkerArray marker_array;
         int id = 0;
@@ -331,7 +404,7 @@ private:
         ROS_INFO("Published %lu markers", marker_array.markers.size());
     }
 
-    double calculateDistance(double x1, double y1, double x2, double y2)
+    double calculateDistance(double x1, double y1, double x2, double y2) const
     {
         return std::hypot(x2 - x1, y2 - y1);
     }

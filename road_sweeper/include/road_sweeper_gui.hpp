@@ -6,6 +6,9 @@
 #include <QCheckBox>
 #include <QVBoxLayout>
 #include <QTextEdit>
+#include <QLabel>
+#include <QLCDNumber>
+#include <QProgressBar>
 #include <QProcess>
 #include <QString>
 #include <QDebug>
@@ -16,6 +19,13 @@
 #include <sys/types.h>
 #include <vector>
 #include <memory>
+#include <can_msgs/Frame.h>
+
+namespace ButtonStyle {
+        const QString DEFAULT = "";
+        const QString ACTIVE = "background-color: green";
+        const QString ERROR = "background-color: red";
+}
 
 class RoadSweeperGui : public QMainWindow
 {
@@ -33,6 +43,13 @@ private:
     enum class PanelName {
     	CONTROL,
     	DISPLAY
+	};
+
+    enum class LaunchStatus
+	{
+		ACTIVE,
+		ERROR,
+		DEFAULT
 	};
 
     struct LaunchComponent {
@@ -62,28 +79,30 @@ private:
 	void closeLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile);
 	void startLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile);
 
+  	void updateLaunchStatus(QPushButton* button, LaunchStatus status);
+
     void toggleAutoSweep(LaunchComponent &component);
+
+    void canCallback(const can_msgs::Frame::ConstPtr& msg);
+    void updateDisplays();
 
 	std::vector<LaunchComponent> launchComponents;
 
 	QCheckBox *autoSweepCheckBox;
 
+    QLCDNumber *speedDisplay;
+    QProgressBar *batteryBar;
+    QLabel *speedLabel;
+    QLabel *unitLabel;
+    QLabel *batteryLabel;
+    double currentSpeed;
+    int batteryLevel;
+
 	/*=== ROS ===*/
 	ros::NodeHandle nh;
 	ros::ServiceClient client;
-	
-	static constexpr const char* DEFAULT = "";
-    static constexpr const char* ACTIVE = "background-color: green";
-    static constexpr const char* ERROR = "background-color: red";
+    ros::Subscriber canSubscriber;
 
-	enum class LaunchStatus
-	{
-		ACTIVE,
-		ERROR,
-		DEFAULT
-	};
-
-	void updateLaunchStatus(QPushButton* button, LaunchStatus status);
 
 };
 
