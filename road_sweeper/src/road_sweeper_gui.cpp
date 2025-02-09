@@ -83,13 +83,21 @@ void RoadSweeperGui::connectSignalsAndSlots()
     /*====== Signal/slot connections ======*/
     // Buttons
     for(size_t i = 0; i < launchComponents.size(); ++i) {
-        connect(launchComponents[i].button, &QPushButton::clicked, 
+        // Special case for auto sweep node
+        if (launchComponents[i].buttonName == "Auto Sweep Node") {
+            connect(launchComponents[i].button, &QPushButton::clicked, 
+                [this, i]() { 
+                    toggleAutoSweep(launchComponents[i]);
+                });
+        } else {
+            connect(launchComponents[i].button, &QPushButton::clicked, 
                 [this, i]() { 
                     toggleLaunch(launchComponents[i].process, 
                                launchComponents[i].button,
                                launchComponents[i].launched, 
                                launchComponents[i].launchFile);
                 });
+        }
     }
     
     // Checkboxes
@@ -184,6 +192,12 @@ void RoadSweeperGui::updateLaunchStatus(QPushButton* button, LaunchStatus status
             button->setStyleSheet(DEFAULT);
             break;
     }
+}
+
+void RoadSweeperGui::toggleAutoSweep(LaunchComponent &component)
+{
+    autoSweepCheckBox->setChecked(false);
+    toggleLaunch(component.process, component.button, component.launched, component.launchFile);
 }
 
 void RoadSweeperGui::controlAutoSweep()

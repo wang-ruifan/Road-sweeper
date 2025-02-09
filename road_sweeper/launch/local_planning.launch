@@ -45,6 +45,8 @@
     <!-- == OpenPlanner Local Planner Trajectory Evaluator == -->
     <arg name="Enable_Prediction" value="true" />           <!-- true, false -->                <!-- 是否启用预测 -->
 
+
+
     <!-- =============== Launch =============== -->
 
     <!-- === OpenPlanner Common Params === -->
@@ -90,5 +92,8 @@
     <include file="$(find op_local_planner)/launch/op_trajectory_evaluator.launch">
         <arg name="enablePrediction" value="$(arg Enable_Prediction)" />
     </include>
+    
+    <!-- === OpenPlanner Behavior Selector === -->
+    <include file="$(find op_local_planner)/launch/op_behavior_selector.launch" />
     
 </launch>

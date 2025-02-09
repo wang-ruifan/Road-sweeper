@@ -25,7 +25,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: Points Raw
   - Class: autoware_rviz_debug/DecisionMakerPanel
     Name: DecisionMakerPanel
 Preferences:
@@ -62,13 +62,29 @@ Visualization Manager:
           Frame Timeout: 15
           Frames:
             All Enabled: true
+            base_link:
+              Value: true
+            gps:
+              Value: true
+            map:
+              Value: true
+            velodyne:
+              Value: true
+            world:
+              Value: true
           Marker Scale: 5
           Name: TF
           Show Arrows: true
           Show Axes: true
           Show Names: true
           Tree:
-            {}
+            world:
+              map:
+                base_link:
+                  velodyne:
+                    {}
+                gps:
+                  {}
           Update Interval: 0
           Value: true
         - Alpha: 1
@@ -308,7 +324,11 @@ Visualization Manager:
           Marker Topic: /vector_map
           Name: ADAS Map
           Namespaces:
-            {}
+            cross_walk: true
+            road_edge: true
+            road_mark: true
+            stop_line: true
+            white_line: true
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -565,7 +585,13 @@ Visualization Manager:
               Marker Topic: /detected_polygons
               Name: Tracked Contours
               Namespaces:
-                {}
+                CenterMarker: true
+                Detection_Circles: true
+                Directions: true
+                InfoText: true
+                detected_polygons: true
+                matching_connections: true
+                tracked_trajectories: true
               Queue Size: 100
               Value: true
             - Class: rviz/MarkerArray
@@ -624,6 +650,22 @@ Visualization Manager:
           Value: true
       Enabled: true
       Name: Control
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /local_trajectories_eval_rviz
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /lane_markers
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

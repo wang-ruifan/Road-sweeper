@@ -20,7 +20,7 @@ public:
         node_sub_ = nh_.subscribe("/vector_map_info/node", 10, &AutoSweep::nodeCallback, this);
         point_sub_ = nh_.subscribe("/vector_map_info/point", 10, &AutoSweep::pointCallback, this);
         pose_sub_ = nh_.subscribe("/current_pose", 10, &AutoSweep::poseCallback, this);
-        marker_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("lane_markers", 10);
+        marker_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("lane_markers", 1, true);
         enable_service_ = nh_.advertiseService("enable_auto_sweep", &AutoSweep::enableCallback, this);
     }
 
@@ -35,6 +35,17 @@ private:
         std::vector<double> end_coords;
     };
 
+    // 添加新的成员变量
+    struct LastPoseInfo {
+        double x;
+        double y;
+        int lane_id;
+        double distance;
+        bool valid;
+    } last_pose_;
+    
+    const double SEARCH_THRESHOLD = 0.5; // 移动超过0.5米才重新搜索
+
     ros::NodeHandle nh_;
     ros::Subscriber lane_sub_;
     ros::Subscriber node_sub_;
@@ -48,6 +59,8 @@ private:
 
     bool enable_auto_sweep_ = true;
 
+    std::unordered_map<int, std::vector<int>> lane_connections_;
+
     bool enableCallback(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
     {
         enable_auto_sweep_ = req.data;
@@ -57,8 +70,12 @@ private:
         return true;
     }
 
+    // 在 laneCallback 中构建车道连接关系
     void laneCallback(const vector_map_msgs::LaneArray::ConstPtr &msg)
     {
+        lanes_.clear();
+        lane_connections_.clear();
+        
         for (const auto &lane : msg->data)
         {
             LaneData lane_data;
@@ -67,6 +84,14 @@ private:
             lane_data.fnid = lane.fnid;
             lane_data.issweep = lane.issweep;
             lanes_[lane.lnid] = lane_data;
+
+            // 记录相邻车道关系
+            if (lane.blid > 0) {  // 有前向连接
+                lane_connections_[lane.lnid].push_back(lane.blid);
+            }
+            if (lane.flid > 0) {  // 有后向连接
+                lane_connections_[lane.lnid].push_back(lane.flid);
+            }
         }
         ROS_INFO("Loaded %lu lanes", lanes_.size());
         publishLaneMarkers();
@@ -101,6 +126,43 @@ private:
         publishLaneMarkers();
     }
 
+    // 优化后的相邻车道搜索逻辑
+    void searchNearbyLanes(double current_x, double current_y, int current_lane_id,
+                          double& min_distance, int& closest_lane_id)
+    {
+        std::vector<int> lanes_to_check;
+        
+        // 将当前车道加入检查列表
+        lanes_to_check.push_back(current_lane_id);
+        
+        // 将相邻车道加入检查列表
+        if (lane_connections_.find(current_lane_id) != lane_connections_.end()) {
+            const auto& connected_lanes = lane_connections_[current_lane_id];
+            lanes_to_check.insert(lanes_to_check.end(), 
+                                connected_lanes.begin(), 
+                                connected_lanes.end());
+        }
+
+        // 只检查相邻车道
+        for (int lane_id : lanes_to_check)
+        {
+            if (lanes_.find(lane_id) == lanes_.end()) continue;
+            
+            const auto& lane_data = lanes_[lane_id];
+            if (!lane_data.start_coords.empty() && !lane_data.end_coords.empty())
+            {
+                double start_distance = calculateDistance(current_x, current_y,
+                                                       lane_data.start_coords[0],
+                                                       lane_data.start_coords[1]);
+                if (start_distance < min_distance)
+                {
+                    min_distance = start_distance;
+                    closest_lane_id = lane_id;
+                }
+            }
+        }
+    }
+
     void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
     {
         if (!enable_auto_sweep_)
@@ -108,36 +170,74 @@ private:
             return;
         }
 
+        double current_x = msg->pose.position.x;
+        double current_y = msg->pose.position.y;
+
+        // 如果有上次的位置信息，且车辆移动距离小于阈值，直接使用缓存的结果
+        if (last_pose_.valid)
+        {
+            double move_distance = calculateDistance(current_x, current_y, 
+                                                  last_pose_.x, last_pose_.y);
+            if (move_distance < SEARCH_THRESHOLD)
+            {
+                // 直接使用上次的结果
+                const auto& lane_data = lanes_[last_pose_.lane_id];
+                ROS_INFO("Using cached Lane ID: %d, issweep: %d, distance: %f",
+                        last_pose_.lane_id, lane_data.issweep, last_pose_.distance);
+                return;
+            }
+        }
+
         double min_distance = std::numeric_limits<double>::max();
         int closest_lane_id = -1;
-        int closest_issweep = -1;
-        std::vector<double> closest_start_coords;
-        std::vector<double> closest_end_coords;
 
-        for (const auto &lane : lanes_)
+        // 如果有上次的位置信息，优先检查相邻车道
+        if (last_pose_.valid)
         {
-            const auto &lane_data = lane.second;
-            if (!lane_data.start_coords.empty() && !lane_data.end_coords.empty())
+            searchNearbyLanes(current_x, current_y, last_pose_.lane_id,
+                            min_distance, closest_lane_id);
+        }
+
+        // 如果在相邻车道中没有找到更近的，进行全局搜索
+        if (closest_lane_id == -1 || min_distance >= SEARCH_THRESHOLD)
+        {
+            for (const auto &lane : lanes_)
             {
-                double distance = calculateDistance(msg->pose.position.x, msg->pose.position.y, lane_data.start_coords[0], lane_data.start_coords[1]);
-                if (distance < min_distance)
+                const auto &lane_data = lane.second;
+                if (!lane_data.start_coords.empty() && !lane_data.end_coords.empty())
                 {
-                    min_distance = distance;
-                    closest_lane_id = lane_data.lnid;
-                    closest_issweep = lane_data.issweep;
-                    closest_start_coords = lane_data.start_coords;
-                    closest_end_coords = lane_data.end_coords;
+                    double distance = calculateDistance(current_x, current_y,
+                                                     lane_data.start_coords[0],
+                                                     lane_data.start_coords[1]);
+                    if (distance < min_distance)
+                    {
+                        min_distance = distance;
+                        closest_lane_id = lane_data.lnid;
+                    }
                 }
             }
         }
 
         if (closest_lane_id != -1)
         {
-            ROS_INFO("Closest Lane ID: %d, issweep: %d, distance: %f", closest_lane_id, closest_issweep, min_distance);
-            ROS_INFO("Current Pose: x: %f, y: %f\n Lane start: x: %f, y: %f; end: x: %f, y: %f", msg->pose.position.x, msg->pose.position.y, closest_start_coords[0], closest_start_coords[1], closest_end_coords[0], closest_end_coords[1]);
+            // 更新缓存
+            last_pose_.x = current_x;
+            last_pose_.y = current_y;
+            last_pose_.lane_id = closest_lane_id;
+            last_pose_.distance = min_distance;
+            last_pose_.valid = true;
+
+            const auto &lane_data = lanes_[closest_lane_id];
+            ROS_INFO("Closest Lane ID: %d, issweep: %d, distance: %f",
+                    closest_lane_id, lane_data.issweep, min_distance);
+            ROS_INFO("Current Pose: x: %f, y: %f\n Lane start: x: %f, y: %f; end: x: %f, y: %f",
+                    current_x, current_y,
+                    lane_data.start_coords[0], lane_data.start_coords[1],
+                    lane_data.end_coords[0], lane_data.end_coords[1]);
         }
         else
         {
+            last_pose_.valid = false;
             ROS_WARN("No valid lane found.");
         }
     }

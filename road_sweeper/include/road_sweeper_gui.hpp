@@ -17,21 +17,6 @@
 #include <vector>
 #include <memory>
 
-struct LaunchComponent {
-    QPushButton* button;
-    QProcess* process;
-    const char* launchFile;
-    bool launched;
-    QString buttonName;
-    
-    LaunchComponent(const char* file, QString name) 
-        : button(nullptr)
-        , process(nullptr)
-        , launchFile(file)
-        , launched(false)
-        , buttonName(std::move(name)) {}
-};
-
 class RoadSweeperGui : public QMainWindow
 {
 	Q_OBJECT
@@ -45,18 +30,7 @@ private slots:
 	void controlAutoSweep();
 
 private:
-	void initializeWidgets();
-    void setupLayouts();
-    void connectSignalsAndSlots();
-    void setupROS();
-
-	void toggleLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile);
-
-	void closeLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile);
-	void startLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile);
-
-
-	enum class PanelName {
+    enum class PanelName {
     	CONTROL,
     	DISPLAY
 	};
@@ -77,6 +51,18 @@ private:
             , buttonName(std::move(name))
             , panel(p) {}
     };
+
+	void initializeWidgets();
+    void setupLayouts();
+    void connectSignalsAndSlots();
+    void setupROS();
+
+	void toggleLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile);
+
+	void closeLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile);
+	void startLaunch(QProcess *&process, QPushButton *button, bool &launched, const QString &launchFile);
+
+    void toggleAutoSweep(LaunchComponent &component);
 
 	std::vector<LaunchComponent> launchComponents;
 

@@ -102,6 +102,16 @@ void PurePursuitNode::run()
     if (!is_pose_set_ || !is_waypoint_set_ || !is_velocity_set_)
     {
       ROS_WARN("Necessary topics are not subscribed yet ... ");
+      if(!is_pose_set_)
+      {
+        ROS_WARN("Pose is not set.");
+      } else if(!is_waypoint_set_)
+      {
+        ROS_WARN("Waypoint is not set.");
+      } else if(!is_velocity_set_)
+      {
+        ROS_WARN("Velocity is not set.");
+      }
       loop_rate.sleep();
       continue;
     }
