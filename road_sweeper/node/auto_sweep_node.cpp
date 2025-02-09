@@ -165,6 +165,9 @@ private:
 
     void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
     {
+        ros::Time total_start_time = ros::Time::now();
+        ros::Time section_time;
+
         if (!enable_auto_sweep_)
         {
             return;
@@ -174,6 +177,7 @@ private:
         double current_y = msg->pose.position.y;
 
         // 如果有上次的位置信息，且车辆移动距离小于阈值，直接使用缓存的结果
+        section_time = ros::Time::now();
         if (last_pose_.valid)
         {
             double move_distance = calculateDistance(current_x, current_y, 
@@ -182,8 +186,11 @@ private:
             {
                 // 直接使用上次的结果
                 const auto& lane_data = lanes_[last_pose_.lane_id];
-                ROS_INFO("Using cached Lane ID: %d, issweep: %d, distance: %f",
-                        last_pose_.lane_id, lane_data.issweep, last_pose_.distance);
+                ros::Duration cache_time = ros::Time::now() - section_time;
+                ros::Duration total_time = ros::Time::now() - total_start_time;
+                ROS_INFO("Cache hit! Lane ID: %d, issweep: %d, distance: %f, move distance: %f\nExecution time: %.3f ms (Cache check: %.3f ms)",
+                        last_pose_.lane_id, lane_data.issweep, last_pose_.distance, move_distance, 
+                        cache_time.toSec() * 1000, total_time.toSec() * 1000);
                 return;
             }
         }
@@ -192,13 +199,16 @@ private:
         int closest_lane_id = -1;
 
         // 如果有上次的位置信息，优先检查相邻车道
+        section_time = ros::Time::now();
         if (last_pose_.valid)
         {
             searchNearbyLanes(current_x, current_y, last_pose_.lane_id,
                             min_distance, closest_lane_id);
         }
+        ros::Duration nearby_search_time = ros::Time::now() - section_time;
 
         // 如果在相邻车道中没有找到更近的，进行全局搜索
+        section_time = ros::Time::now();
         if (closest_lane_id == -1 || min_distance >= SEARCH_THRESHOLD)
         {
             for (const auto &lane : lanes_)
@@ -216,8 +226,13 @@ private:
                     }
                 }
             }
+            ROS_INFO("Searched all lanes");
+        } else {
+            ROS_INFO("Searched nearby lanes");
         }
+        ros::Duration global_search_time = ros::Time::now() - section_time;
 
+        section_time = ros::Time::now();
         if (closest_lane_id != -1)
         {
             // 更新缓存
@@ -240,6 +255,15 @@ private:
             last_pose_.valid = false;
             ROS_WARN("No valid lane found.");
         }
+        ros::Duration update_time = ros::Time::now() - section_time;
+
+        // 输出详细的时间统计
+        ros::Duration total_time = ros::Time::now() - total_start_time;
+        ROS_INFO("PoseCallback timing breakdown (ms):");
+        ROS_INFO("- Nearby search: %.3f", nearby_search_time.toSec() * 1000);
+        ROS_INFO("- Global search: %.3f", global_search_time.toSec() * 1000);
+        ROS_INFO("- Cache update: %.3f", update_time.toSec() * 1000);
+        ROS_INFO("- Total time: %.3f", total_time.toSec() * 1000);
     }
 
     void publishLaneMarkers()
