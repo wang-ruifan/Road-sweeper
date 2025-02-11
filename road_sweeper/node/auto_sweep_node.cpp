@@ -66,7 +66,7 @@ private:
     std::unordered_map<int, LaneData> lanes_;
     std::unordered_map<int, int> nodes_;
 
-    bool enable_auto_sweep_ = true;
+    bool enable_auto_sweep_ = false;
     bool sweep_status_ = false;
 
     std::unordered_map<int, std::vector<int>> lane_connections_;
@@ -358,9 +358,16 @@ private:
                 line_marker.type = visualization_msgs::Marker::LINE_STRIP;
                 line_marker.action = visualization_msgs::Marker::ADD;
                 line_marker.scale.x = 0.1;
-                line_marker.color.r = 1.0;
-                line_marker.color.g = 0.0;
-                line_marker.color.b = 0.0;
+
+                if (lane_data.issweep == 1) {
+                    line_marker.color.r = 0.0;
+                    line_marker.color.g = 0.0;
+                    line_marker.color.b = 1.0;
+                } else {
+                    line_marker.color.r = 1.0;
+                    line_marker.color.g = 0.0;
+                    line_marker.color.b = 0.0;
+                }
                 line_marker.color.a = 1.0;
 
                 geometry_msgs::Point start_point;

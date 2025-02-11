@@ -16,7 +16,8 @@ RoadSweeperGui::RoadSweeperGui(QWidget *parent)
         {"cmd_output.launch", "Cmd Output", PanelName::CONTROL},
         {"cmd_to_can.launch", "Cmd To Can", PanelName::CONTROL},
         {"auto_sweep.launch", "Auto Sweep Node", PanelName::CONTROL},
-        {"rviz.launch", "RViz", PanelName::DISPLAY}
+        {"rviz.launch", "RViz", PanelName::DISPLAY},
+        {"rqt.launch", "RQT", PanelName::DISPLAY}
     }
     , nh()
 {

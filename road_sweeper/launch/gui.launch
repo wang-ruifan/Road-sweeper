@@ -1,0 +1,4 @@
+<launch>
+    <node name="road_sweeper_gui" pkg="road_sweeper" type="road_sweeper_gui" output="screen">
+    </node>
+</launch>
