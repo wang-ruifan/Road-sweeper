@@ -1,0 +1,8 @@
+<launch>
+  <!-- Ls Lidar launch -->
+  <include file="$(find lslidar_driver)/launch/lslidar_c16.launch" />
+
+  <!-- Imu and gnss launch -->
+  <include file="$(find fdilink_ahrs)/launch/ahrs_data.launch" />
+
+</launch>

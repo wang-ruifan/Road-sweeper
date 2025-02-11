@@ -8,6 +8,7 @@ RoadSweeperGui::RoadSweeperGui(QWidget *parent)
     , launchComponents{
         {"setup.launch", "Setup", PanelName::CONTROL},
         {"map.launch", "Map", PanelName::CONTROL},
+        {"lidar_imu.launch", "Lidar and IMU", PanelName::CONTROL},
         {"localization.launch", "Localization", PanelName::CONTROL},
         {"global_planning.launch", "Global Planning", PanelName::CONTROL},
         {"perception.launch", "Perception", PanelName::CONTROL},

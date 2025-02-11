@@ -1,0 +1,11 @@
+<launch>
+  
+  <include file="$(find lslidar_driver)/launch/lslidar_c16.launch" />
+
+  <include file="$(find fdilink_ahrs)/launch/ahrs_data.launch" />
+
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find lslidar_driver)/rviz_cfg/lslidar.rviz"/>
+ 
+ <node pkg="tf" type="static_transform_publisher" name="laser_link_to_world" args="0 0 0 -1.578 0 0 world velodyne 100" />
+  
+</launch>
