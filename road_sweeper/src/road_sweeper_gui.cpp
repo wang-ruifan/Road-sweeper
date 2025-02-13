@@ -41,8 +41,8 @@ void RoadSweeperGui::initializeSpeedDisplay()
     speedLabel = new QLabel("Speed:", this);
     speedLabel->setStyleSheet("QLabel { font-size: 14pt; }");
     speedDisplay = new QLCDNumber(this);
-    speedDisplay->setDigitCount(6);
-    speedDisplay->setSmallDecimalPoint(true);
+    speedDisplay->setDigitCount(2);
+    speedDisplay->setSmallDecimalPoint(false);
     speedDisplay->setSegmentStyle(QLCDNumber::Flat);
     speedDisplay->setStyleSheet("QLCDNumber { background-color: white; color: green; }");
     speedDisplay->setMinimumSize(150, 50);
@@ -106,7 +106,10 @@ void RoadSweeperGui::initializeWidgets()
     
     currentSpeed = 0.00;
     batteryLevel = 100;
-    currentAngle = 00.0;
+    currentAngle = 0.0;
+
+    updateBatteryFlag = updateAngleFlag = updateSpeedFlag = false;
+    isPaintRunning = false;
 }
 
 void RoadSweeperGui::setupLayouts()
@@ -124,7 +127,7 @@ void RoadSweeperGui::setupLayouts()
     // Speed layout setup
     QHBoxLayout *speedLayout = new QHBoxLayout;
     speedLayout->addWidget(speedLabel);
-    speedLayout->addWidget(speedDisplay,3);
+    speedLayout->addWidget(speedDisplay);
     speedLayout->addWidget(unitLabel);
 
     // Add speed，car and battery to display panel
@@ -187,6 +190,13 @@ void RoadSweeperGui::connectSignalsAndSlots()
     
     // Checkboxes
     connect(autoSweepCheckBox, &QCheckBox::clicked, this, &RoadSweeperGui::controlAutoSweep);
+
+    // Timers
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, [this]() {
+        updateBatteryFlag = updateAngleFlag = updateSpeedFlag = true;
+    });
+    timer->start(500);
 }
 
 void RoadSweeperGui::setupROS()
@@ -202,28 +212,44 @@ void RoadSweeperGui::setupROS()
 
  void RoadSweeperGui::canCallback(const can_msgs::Frame::ConstPtr& msg)
 {
+    if ((!updateBatteryFlag && !updateAngleFlag && !updateSpeedFlag)|| isPaintRunning) {
+        return;
+    }
+
     // Speed data message ID: 0x503
-    if(msg->id == 0x503)
+    if(msg->id == 0x503 && updateSpeedFlag)
     {
-        double speed = msg->data[2];
+        updateSpeedFlag = false;
+        int speed = msg->data[2];
+        if (speed >= 12) {
+            speed -= 12;
+            speed = -speed;
+        }
         if(speed != currentSpeed) {
             currentSpeed = speed;
             updateDisplays(UpdateType::SPEED);
         }
     }
     // Angle data message ID: 0x502
-    else if(msg->id == 0x502)
+    else if(msg->id == 0x502 && updateAngleFlag)
     {
+        isPaintRunning = true;
+        updateAngleFlag = false;
         double angle = (msg->data[1] << 8) | msg->data[2];
+        angle -= 1024.0;
+        angle /= 15.0;
+        angle = -angle;
         if(angle != currentAngle) {
             currentAngle = angle;
             updateDisplays(UpdateType::ANGLE);
         }
+        isPaintRunning = false;
     }
     // Battery data message ID: 0x504
-    else if(msg->id == 0x504)
+    else if(msg->id == 0x504 && updateBatteryFlag)
     {
-        int level = msg->data[0];
+        updateBatteryFlag = false;
+        int level = msg->data[1];
         if(level != batteryLevel) {
             batteryLevel = level;
             updateDisplays(UpdateType::BATTERY);
@@ -233,7 +259,7 @@ void RoadSweeperGui::setupROS()
 
 void RoadSweeperGui::updateSpeed()
 {
-    speedDisplay->display(QString::number(currentSpeed, 'f', 3));
+    speedDisplay->display(QString::number(currentSpeed));
 }
 
 void RoadSweeperGui::updateBattery()
@@ -349,7 +375,6 @@ void RoadSweeperGui::toggleLaunch(QProcess *&process, QPushButton *button, bool 
     }
 }
 
-// 添加新的辅助函数用于更新启动状态
 void RoadSweeperGui::updateLaunchStatus(QPushButton* button, LaunchStatus status)
 {
     switch (status) {

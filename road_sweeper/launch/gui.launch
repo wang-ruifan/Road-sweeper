@@ -1,4 +1,6 @@
 <launch>
-    <node name="road_sweeper_gui" pkg="road_sweeper" type="road_sweeper_gui" output="screen">
-    </node>
+    <node pkg="socketcan_bridge" name="socket" type="socketcan_to_topic_node" output="screen"></node>
+
+    <node name="road_sweeper_gui" pkg="road_sweeper" type="road_sweeper_gui" output="screen"/>
+
 </launch>

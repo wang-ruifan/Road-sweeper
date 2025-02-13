@@ -13,6 +13,7 @@
 #include <QString>
 #include <QDebug>
 #include <QFile>
+#include <QTimer>
 #include <ros/ros.h>
 #include <std_srvs/SetBool.h>
 #include <thread>
@@ -112,11 +113,17 @@ private:
     QLabel *speedLabel;
     QLabel *unitLabel;
     QLabel *batteryLabel;
-    double currentSpeed;
+    int currentSpeed;
     int batteryLevel;
     double currentAngle;
 
     CarWidget* carWidget;
+
+    QTimer* updateTimer;
+    bool updateBatteryFlag;
+    bool updateAngleFlag;
+    bool updateSpeedFlag;
+    bool isPaintRunning;
 
 	/*=== ROS ===*/
 	ros::NodeHandle nh;
