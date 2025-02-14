@@ -17,7 +17,7 @@
     <arg name="clip_max_height" default="0.5"/>                 <!-- 0.0 ~ 5.0 -->                      <!-- 需要聚类的点云的最大高度 -->
     <arg name="use_vector_map" default="false"/>
     <arg name="wayarea_gridmap_layer" default="grid_map_wayarea"/>
-    <arg name="remove_points_upto" default="0.0"/>                <!-- 0.0 ~ 2.5 -->                    <!-- 移除距离激光雷达的最小距离之内的点云 -->
+    <arg name="remove_points_upto" default="2"/>                <!-- 0.0 ~ 2.5 -->                    <!-- 移除距离激光雷达的最小距离之内的点云 -->
     <arg name="keep_lanes" default="false"/>
     <arg name="keep_lane_left_distance" default="5"/>               <!-- 0 ~ 100 -->
     <arg name="keep_lane_right_distance" default="5"/>              <!-- 0 ~ 100 -->

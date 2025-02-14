@@ -39,6 +39,9 @@ catkin_package(
 # set(SERIAL_LIB_PATH /opt/ros/kinetic/lib)
 # link_directories(${SERIAL_LIB_PATH})
 
+## crc_table
+add_library(crc_table src/crc_table.cpp)
+
 ## ahrs_driver
 add_executable(ahrs_driver src/ahrs_driver.cpp)
 target_link_libraries(ahrs_driver crc_table ${catkin_LIBRARIES})# ${SERIAL_LIB}
@@ -46,5 +49,20 @@ target_link_libraries(ahrs_driver crc_table ${catkin_LIBRARIES})# ${SERIAL_LIB}
 add_executable(imu_tf src/imu_tf.cpp)
 target_link_libraries( imu_tf ${catkin_LIBRARIES})# ${SERIAL_LIB}
 
-## crc_table
-add_library(crc_table src/crc_table.cpp)
+install(TARGETS crc_table
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin)
+
+install(TARGETS ahrs_driver
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(TARGETS imu_tf
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY launch/
+	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+

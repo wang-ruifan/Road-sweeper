@@ -76,6 +76,13 @@ private:
         enable_auto_sweep_ = req.data;
         res.success = true;
         res.message = enable_auto_sweep_ ? "Auto sweep enabled" : "Auto sweep disabled";
+
+        if (!enable_auto_sweep_) {
+            sweepUpdate(false);
+        } else {
+            sweep_status_ = false;
+        }
+
         ROS_INFO("%s", res.message.c_str());
         return true;
     }

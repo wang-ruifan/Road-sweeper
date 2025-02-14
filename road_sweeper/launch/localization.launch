@@ -29,7 +29,7 @@
     <!-- ==== NDT matching ==== -->
     <!-- Launch arguments -->
     <arg name="method_type" default="0" />                  <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
-    <arg name="use_gnss" default="1" />                     <!-- 0, 1 -->                               <!-- 是否使用GNSS，1：使用、0：不使用 -->
+    <arg name="use_gnss" default="0" />                     <!-- 0, 1 -->                               <!-- 是否使用GNSS，1：使用、0：不使用 -->
     <arg name="use_odom" default="false" />                 <!-- false, true -->                        <!-- 是否使用里程计 -->
     <arg name="use_imu" default="false" />                  <!-- false, true -->                        <!-- 是否使用IMU -->
     <arg name="imu_upside_down" default="false" />          <!-- false, true -->                        <!-- IMU是否倒置 -->
@@ -39,7 +39,7 @@
     <arg name="get_height" default="false" />               <!-- false, true -->                        <!-- 是否从GNSS数据中获取高度 -->
     <arg name="use_local_transform" default="false" />
     <arg name="output_log_data" default="false" />          <!-- false, true -->                        <!-- 是否输出日志 -->
-    <arg name="gnss_reinit_fitness" default="10.0" />        <!-- 0.0 ~ 500.0 -->                        <!-- 使用GNSS位置重新初始化的适应度值 -->
+    <!--<arg name="gnss_reinit_fitness" default="10.0" />-->        <!-- 0.0 ~ 500.0 -->                        <!-- 使用GNSS位置重新初始化的适应度值 -->
 
     <!-- Topic /config/ndt  arguments -->
     <arg name="init_pos_gnss" default="1" />                <!-- init_pos=0, gnss=1 -->                 <!-- 初始化位置的方式 -->
@@ -92,10 +92,10 @@
         <arg name="ground_point_topic" value="$(arg ground_point_topic)" />
     </include>
 
-    <!-- ==== Fix to TF pose ==== -->
+    <!-- ==== Fix to TF pose ==== 
     <include file="$(find gnss_localizer)/launch/fix2tfpose.launch">
         <arg name="plane" value="7" />
-    </include>
+    </include>-->
 
     <!-- ==== NDT matching ==== -->
     <include file="$(find lidar_localizer)/launch/ndt_matching.launch" >
@@ -110,7 +110,7 @@
         <arg name="get_height" value="$(arg get_height)" />
         <arg name="use_local_transform" value="$(arg use_local_transform)" />
         <arg name="output_log_data" value="$(arg output_log_data)" />
-        <arg name="gnss_reinit_fitness" value="$(arg gnss_reinit_fitness)" />
+        <!--<arg name="gnss_reinit_fitness" value="$(arg gnss_reinit_fitness)" />-->
     </include>
 
     <!-- ==== NDT matching monitor ==== -->
