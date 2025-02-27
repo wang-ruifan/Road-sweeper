@@ -3,6 +3,7 @@
     <!-- Auto sweep node launch -->
 	<node pkg="road_sweeper" type="auto_sweep_node" name="auto_sweep_node" output="screen">
         <param name="search_threshold" value="0.5" type="double"/>
+        <param name="output_debug_info" value="false" type="bool"/>
     </node>
 
 </launch>

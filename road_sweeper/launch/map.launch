@@ -4,7 +4,7 @@
 
     <!-- Set up parameters -->
     <arg name="point_cloud_scene_num" default="noupdate" />
-    <arg name="point_cloud_path_pcd" default="$(env HOME)/road_sweeper_data/Points_Map/map.pcd" />
+    <arg name="point_cloud_path_pcd" default="$(env HOME)/Road-sweeper-data/Map/sweep-3area/Points_Map/map.pcd" />
  
     <!-- Load Point Cloud Map -->
     <node pkg="map_file" type="points_map_loader" name="points_map_loader" >
@@ -17,6 +17,6 @@
     <!-- Load Vector Map -->
     <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" output="screen">
         <param name="load_mode" value="directory" />
-        <param name="map_dir" value="$(env HOME)/road_sweeper_data/Vector_Map" />
+        <param name="map_dir" value="$(env HOME)/Road-sweeper-data/Map/sweep-3area/Vector_Map" />
     </node>
 </launch>

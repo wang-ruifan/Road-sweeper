@@ -25,6 +25,8 @@ public:
         ros::NodeHandle private_nh("~");
         private_nh.param("search_threshold", search_threshold_, 0.5);
         ROS_INFO("Search threshold set to: %.2f meters", search_threshold_);
+        private_nh.param("output_debug_info", output_debug_info_, false);
+        ROS_INFO("Output debug info: %s", output_debug_info_ ? "true" : "false");
 
         lane_sub_ = nh_.subscribe("/vector_map_info/lane", 10, &AutoSweep::laneCallback, this);
         node_sub_ = nh_.subscribe("/vector_map_info/node", 10, &AutoSweep::nodeCallback, this);
@@ -66,6 +68,7 @@ private:
     std::unordered_map<int, LaneData> lanes_;
     std::unordered_map<int, int> nodes_;
 
+    bool output_debug_info_ = false;
     bool enable_auto_sweep_ = false;
     bool sweep_status_ = false;
 
@@ -79,8 +82,6 @@ private:
 
         if (!enable_auto_sweep_) {
             sweepUpdate(false);
-        } else {
-            sweep_status_ = false;
         }
 
         ROS_INFO("%s", res.message.c_str());
@@ -282,16 +283,20 @@ private:
         last_pose_.valid = true;
 
         const auto &lane_data = lanes_[lane_id];
-        ROS_INFO("Updated position - Lane ID: %d, distance: %.2f m, issweep: %d",
+        if(output_debug_info_) {
+            ROS_INFO("Updated position - Lane ID: %d, distance: %.2f m, issweep: %d",
                  lane_id, distance, lane_data.issweep);
+        }
     }
 
     // 使用缓存的结果
     void useCachedResult(bool &is_sweep) const
     {
         const auto& lane_data = lanes_.at(last_pose_.lane_id);
-        ROS_INFO("Using cached result - Lane ID: %d, issweep: %d, distance: %.2f m",
-                 last_pose_.lane_id, lane_data.issweep, last_pose_.distance);
+        if(output_debug_info_) {
+            ROS_INFO("Using cached result - Lane ID: %d, issweep: %d, distance: %.2f m",
+                     last_pose_.lane_id, lane_data.issweep, last_pose_.distance);
+        }
         if (lane_data.issweep == 1) {
             is_sweep = true;
         }
