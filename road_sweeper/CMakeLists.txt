@@ -5,6 +5,8 @@ find_package(Qt5 REQUIRED COMPONENTS Widgets Core Gui)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -39,6 +41,8 @@ set(road_sweeper_gui_SRCS
   include/road_sweeper_gui.hpp
   src/car_widget.cpp
   include/car_widget.hpp
+  src/resource_monitor.cpp
+  include/resource_monitor.hpp
 )
 
 add_executable(road_sweeper_gui ${road_sweeper_gui_SRCS})

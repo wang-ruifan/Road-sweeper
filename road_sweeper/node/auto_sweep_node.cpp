@@ -37,6 +37,13 @@ public:
         enable_service_ = nh_.advertiseService("enable_auto_sweep", &AutoSweep::enableCallback, this);
     }
 
+    ~AutoSweep()
+    {
+        std_msgs::Bool msg;
+        msg.data = false;
+        sweep_pub_.publish(msg);
+    }
+
 private:
     struct LaneData
     {

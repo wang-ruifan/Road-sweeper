@@ -85,6 +85,11 @@ void RoadSweeperGui::initializeCarWidget()
     carWidget->setCarImage(imagePath);
 }
 
+void RoadSweeperGui::initializeResourceMonitor()
+{
+    resourceMonitor = new ResourceMonitor(this);
+}
+
 void RoadSweeperGui::initializeWidgets()
 {
     /*====== Widget initialization ======*/
@@ -93,7 +98,7 @@ void RoadSweeperGui::initializeWidgets()
         component.button = new QPushButton(component.buttonName, this);
     }
     // Checkboxes
-    autoSweepCheckBox = new QCheckBox("Auto Sweep", this);
+    sweepCheckBox = new QCheckBox("Sweep", this);
 
     // Speed Display
     initializeSpeedDisplay();
@@ -103,6 +108,9 @@ void RoadSweeperGui::initializeWidgets()
 
     // Car Widget
     initializeCarWidget();
+
+    // Resource Monitor
+    initializeResourceMonitor();
     
     currentSpeed = 0.00;
     batteryLevel = 100;
@@ -136,6 +144,7 @@ void RoadSweeperGui::setupLayouts()
     displayPanel->addLayout(speedLayout, 3);
     displayPanel->setSpacing(10);
 
+    // Add buttons to control panel
     for(const auto& component : launchComponents) {
         if (component.panel == PanelName::CONTROL) {
             /*=== Control panel ===*/
@@ -143,7 +152,7 @@ void RoadSweeperGui::setupLayouts()
                 // Special case for auto sweep node
                 QHBoxLayout *sweepLayout = new QHBoxLayout;
                 sweepLayout->addWidget(component.button);
-                sweepLayout->addWidget(autoSweepCheckBox);
+                sweepLayout->addWidget(sweepCheckBox);
                 controlPanel->addLayout(sweepLayout);
             } else {
                 controlPanel->addWidget(component.button);
@@ -153,6 +162,9 @@ void RoadSweeperGui::setupLayouts()
             displayPanel->addWidget(component.button, 1);
         }
     }
+
+    // Add resource monitor to control panel
+    controlPanel->addWidget(resourceMonitor);
 
     /*=== Main layout ===*/
     mainLayout->addLayout(controlPanel);
@@ -189,7 +201,7 @@ void RoadSweeperGui::connectSignalsAndSlots()
     }
     
     // Checkboxes
-    connect(autoSweepCheckBox, &QCheckBox::clicked, this, &RoadSweeperGui::controlAutoSweep);
+    connect(sweepCheckBox, &QCheckBox::clicked, this, &RoadSweeperGui::controlSweep);
 
     // Timers
     QTimer *timer = new QTimer(this);
@@ -208,6 +220,8 @@ void RoadSweeperGui::setupROS()
     // Create subscriber
     canSubscriber = nh.subscribe("/received_messages", 10, 
                                &RoadSweeperGui::canCallback, this);
+    // Create publisher
+    sweepPublisher = nh.advertise<std_msgs::Bool>("sweep_control", 1);
 }
 
  void RoadSweeperGui::canCallback(const can_msgs::Frame::ConstPtr& msg)
@@ -393,14 +407,38 @@ void RoadSweeperGui::updateLaunchStatus(QPushButton* button, LaunchStatus status
 
 void RoadSweeperGui::toggleAutoSweep(LaunchComponent &component)
 {
-    autoSweepCheckBox->setChecked(false);
     toggleLaunch(component.process, component.button, component.launched, component.launchFile);
+    changeSweepCheckBox(component.launched);
+}
+
+void RoadSweeperGui::changeSweepCheckBox(bool state)
+{
+    sweepCheckBox->setChecked(false);
+    if (state) {
+        // change to "Auto Sweep"
+        controlSweep();
+        sweepCheckBox->setText("Auto Sweep");
+        disconnect(sweepCheckBox, &QCheckBox::clicked, this, &RoadSweeperGui::controlSweep);
+        connect(sweepCheckBox, &QCheckBox::clicked, this, &RoadSweeperGui::controlAutoSweep);
+    } else {
+        // change to "Sweep"
+        sweepCheckBox->setText("Sweep");
+        disconnect(sweepCheckBox, &QCheckBox::clicked, this, &RoadSweeperGui::controlAutoSweep);
+        connect(sweepCheckBox, &QCheckBox::clicked, this, &RoadSweeperGui::controlSweep);
+    }
+}
+
+void RoadSweeperGui::controlSweep()
+{
+    std_msgs::Bool msg;
+    msg.data = sweepCheckBox->isChecked();
+    sweepPublisher.publish(msg);
 }
 
 void RoadSweeperGui::controlAutoSweep()
 {
     std_srvs::SetBool srv;
-    srv.request.data = autoSweepCheckBox->isChecked();
+    srv.request.data = sweepCheckBox->isChecked();
     client.call(srv);
 }
 

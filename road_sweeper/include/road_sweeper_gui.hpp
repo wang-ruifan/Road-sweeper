@@ -22,7 +22,10 @@
 #include <vector>
 #include <memory>
 #include <can_msgs/Frame.h>
+#include <std_srvs/SetBool.h>
+#include <std_msgs/Bool.h>
 #include "car_widget.hpp"
+#include "resource_monitor.hpp"
 
 namespace ButtonStyle {
         const QString DEFAULT = "";
@@ -40,6 +43,7 @@ public:
 
 private slots:
 	// Control tab;
+    void controlSweep();
 	void controlAutoSweep();
 
 private:
@@ -83,6 +87,7 @@ private:
     void initializeSpeedDisplay();
     void initializeBatteryDisplay();
     void initializeCarWidget();
+    void initializeResourceMonitor();
 
 	void initializeWidgets();
     void setupLayouts();
@@ -98,6 +103,8 @@ private:
 
     void toggleAutoSweep(LaunchComponent &component);
 
+    void changeSweepCheckBox(bool state);
+
     void canCallback(const can_msgs::Frame::ConstPtr& msg);
     void updateDisplays(UpdateType type);
     void updateSpeed();
@@ -106,7 +113,7 @@ private:
 
 	std::vector<LaunchComponent> launchComponents;
 
-	QCheckBox *autoSweepCheckBox;
+	QCheckBox *sweepCheckBox;
 
     QLCDNumber *speedDisplay;
     QProgressBar *batteryBar;
@@ -118,6 +125,7 @@ private:
     double currentAngle;
 
     CarWidget* carWidget;
+    ResourceMonitor* resourceMonitor;
 
     QTimer* updateTimer;
     bool updateBatteryFlag;
@@ -129,6 +137,7 @@ private:
 	ros::NodeHandle nh;
 	ros::ServiceClient client;
     ros::Subscriber canSubscriber;
+    ros::Publisher sweepPublisher;
 };
 
 #endif // ROAD_SWEEPER_GUI_HPP
