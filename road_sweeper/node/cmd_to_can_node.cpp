@@ -1,4 +1,5 @@
 #include "cmd_to_can_node.hpp"
+#include <std_srvs/SetBool.h>  // 添加SetBool服务头文件
 
 ros::Publisher can_pub;
 
@@ -10,10 +11,10 @@ bool current_sweep_status = false;
 static uint8_t g_sweep_data = 0x00;                 // 清扫相关控制位 (data[6])
 static uint8_t g_gear_data = 0x00;                  // 档位控制位 (data[7])
 
-// 清扫控制回调函数
-void sweepControlCallback(const std_msgs::Bool::ConstPtr& msg)
+// 清扫控制服务回调函数
+bool sweepControlService(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
 {
-    if(msg->data) {
+    if(req.data) {
         // 开启清扫：
         /* Byte 6 
          - 电刷设置为双刷
@@ -37,6 +38,9 @@ void sweepControlCallback(const std_msgs::Bool::ConstPtr& msg)
                       (static_cast<uint8_t>(BrushControl::BOTH) << MAIN_BRUSH_OFFSET);
                       
         ROS_INFO("Sweeping ON, setting data: %x %x", g_sweep_data, g_gear_data);
+        current_sweep_status = true;
+        res.success = true;
+        res.message = "Switching ON sweeping";
     } else {
         // 关闭清扫
         /* Byte 6 
@@ -59,7 +63,12 @@ void sweepControlCallback(const std_msgs::Bool::ConstPtr& msg)
                       (static_cast<uint8_t>(BrushControl::OFF) << MAIN_BRUSH_OFFSET);
 
         ROS_INFO("Sweeping OFF, setting data: %x %x", g_sweep_data, g_gear_data);
+        current_sweep_status = false;
+        res.success = true;
+        res.message = "Switching OFF sweeping";
     }
+    
+    return true;
 }
 
 // 车辆控制回调函数
@@ -125,13 +134,13 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "cmd_to_can_node");
     ros::NodeHandle nh;
 
-    ROS_INFO("cmd_to_can_node started, subscribing /vehicle_cmd and /sweep_control, publishing /sent_message");
+    ROS_INFO("cmd_to_can_node started, subscribing /vehicle_cmd, providing /sweep_control service, publishing /sent_message");
 
     // 订阅 Autoware 发布的 vehicle_cmd
     ros::Subscriber cmd_sub = nh.subscribe("/vehicle_cmd", 10, vehicleCmdCallback);
 
-    // 订阅清扫控制命令
-    ros::Subscriber sweep_sub = nh.subscribe("/sweep_control", 10, sweepControlCallback);
+    // 提供清扫控制服务
+    ros::ServiceServer sweep_service = nh.advertiseService("/sweep_control", sweepControlService);
 
     // 发布转换后的 CAN 消息
     can_pub = nh.advertise<can_msgs::Frame>("/sent_messages", 10);

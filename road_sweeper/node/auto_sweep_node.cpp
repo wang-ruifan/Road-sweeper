@@ -33,15 +33,22 @@ public:
         point_sub_ = nh_.subscribe("/vector_map_info/point", 10, &AutoSweep::pointCallback, this);
         pose_sub_ = nh_.subscribe("/current_pose", 10, &AutoSweep::poseCallback, this);
         marker_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("lane_markers", 1, true);
-        sweep_pub_ = nh_.advertise<std_msgs::Bool>("sweep_control", 1);
+        sweep_client_ = nh_.serviceClient<std_srvs::SetBool>("/sweep_control");
         enable_service_ = nh_.advertiseService("enable_auto_sweep", &AutoSweep::enableCallback, this);
     }
 
     ~AutoSweep()
     {
-        std_msgs::Bool msg;
-        msg.data = false;
-        sweep_pub_.publish(msg);
+        std_srvs::SetBool srv;
+        srv.request.data = false;
+        if (sweep_client_.call(srv))
+        {
+            ROS_INFO("Sweep control disabled on shutdown");
+        }
+        else
+        {
+            ROS_ERROR("Failed to disable sweep control on shutdown");
+        }
     }
 
 private:
@@ -69,7 +76,7 @@ private:
     ros::Subscriber point_sub_;
     ros::Subscriber pose_sub_;
     ros::Publisher marker_pub_;
-    ros::Publisher sweep_pub_;
+    ros::ServiceClient sweep_client_;
     ros::ServiceServer enable_service_;
 
     std::unordered_map<int, LaneData> lanes_;
@@ -311,12 +318,29 @@ private:
 
     void sweepUpdate(bool is_sweep)
     {
-        if(is_sweep != sweep_status_) {
-            std_msgs::Bool msg;
-            msg.data = is_sweep;
-            sweep_pub_.publish(msg);
-            sweep_status_ = is_sweep;
-            ROS_INFO("Sweep status changed to: %s", is_sweep ? "ON" : "OFF");
+        if (is_sweep != sweep_status_)
+        {
+            std_srvs::SetBool srv;
+            srv.request.data = is_sweep;
+
+            if (sweep_client_.call(srv))
+            {
+                if (srv.response.success)
+                {
+                    sweep_status_ = is_sweep;
+                    ROS_INFO("Sweep status changed to: %s (%s)",
+                             is_sweep ? "ON" : "OFF",
+                             srv.response.message.c_str());
+                }
+                else
+                {
+                    ROS_WARN("Failed to change sweep status: %s", srv.response.message.c_str());
+                }
+            }
+            else
+            {
+                ROS_ERROR("Failed to call sweep_control service");
+            }
         }
     }
 
