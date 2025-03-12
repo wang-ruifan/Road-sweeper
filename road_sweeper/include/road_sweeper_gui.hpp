@@ -102,6 +102,7 @@ private:
   	void updateLaunchStatus(QPushButton* button, LaunchStatus status);
 
     void toggleAutoSweep(LaunchComponent &component);
+    void disableSweep();
 
     void changeSweepCheckBox(bool state);
 
@@ -137,7 +138,7 @@ private:
 	ros::NodeHandle nh;
 	ros::ServiceClient client;
     ros::Subscriber canSubscriber;
-    ros::Publisher sweepPublisher;
+    ros::ServiceClient sweepClient;
 };
 
 #endif // ROAD_SWEEPER_GUI_HPP

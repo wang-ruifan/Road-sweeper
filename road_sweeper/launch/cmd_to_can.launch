@@ -1,7 +1,22 @@
 <launch>
 
+    <!-- =============== Config arguments =============== -->
+    
+    <!-- Arguments' name        Arguments' value            Arguments' range/options            Description -->
+
+    <!-- ==== Cmd to CAN ==== -->
+    <arg name="cmd_topic" default="/vehicle_cmd"/>          <!-- /vehicle_cmd -->               <!-- 输入速度指令话题 -->
+    <arg name="sweep_service_topic" default="/sweep_control"/> <!-- /sweep_service -->          <!-- 输入清扫服务话题 -->
+    <arg name="can_pub_topic" default="/sent_messages"/>    <!-- /sent_messages -->             <!-- 输出CAN数据话题 -->
+    <arg name="max_linear_speed" default="3.0"/>            <!-- 0.0 ~ 5.0 -->                 <!-- 最大线速度 -->
+
     <node pkg="socketcan_bridge" name="topic_to_socketcan_node" type="topic_to_socketcan_node" output="screen"></node>
 
-    <node pkg="road_sweeper" name="cmd_to_can_node" type="cmd_to_can_node" output="screen"></node>
+    <node pkg="road_sweeper" name="cmd_to_can_node" type="cmd_to_can_node" output="screen">
+        <param name="cmd_topic" value="$(arg cmd_topic)"/>
+        <param name="sweep_service_topic" value="$(arg sweep_service_topic)"/>
+        <param name="can_pub_topic" value="$(arg can_pub_topic)"/>
+        <param name="max_linear_speed" value="$(arg max_linear_speed)"/>
+    </node>
 
 </launch>

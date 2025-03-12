@@ -4,7 +4,7 @@
     <!-- Arguments' name        Arguments' value                Arguments' range/options                Description -->
     
     <!-- ==== Lidar Euclidean Cluster Detect ==== -->
-    <arg name="use_gpu" default="false"/>
+    <arg name="use_gpu" default="true"/>
     <arg name="output_frame" default="map"/>                    <!-- map, velodyne -->                  <!-- 聚类结果输出坐标系 -->
     <arg name="pose_estimation" default="true"/>                <!-- true, false -->                    <!-- 是否进行位姿估计 -->
     <arg name="downsample_cloud" default="false"/>              <!-- true, false -->                    <!-- 是否对点云进行降采样 -->

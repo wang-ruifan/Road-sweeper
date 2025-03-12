@@ -220,8 +220,8 @@ void RoadSweeperGui::setupROS()
     // Create subscriber
     canSubscriber = nh.subscribe("/received_messages", 10, 
                                &RoadSweeperGui::canCallback, this);
-    // Create publisher
-    sweepPublisher = nh.advertise<std_msgs::Bool>("sweep_control", 1);
+    // Create Client
+    sweepClient = nh.serviceClient<std_srvs::SetBool>("/sweep_control");
 }
 
  void RoadSweeperGui::canCallback(const can_msgs::Frame::ConstPtr& msg)
@@ -231,16 +231,15 @@ void RoadSweeperGui::setupROS()
     }
 
     // Speed data message ID: 0x503
-    if(msg->id == 0x503 && updateSpeedFlag)
+    if (msg->id == 0x503 && updateSpeedFlag)
     {
         updateSpeedFlag = false;
-        int speed = msg->data[2];
-        if (speed >= 12) {
-            speed -= 12;
-            speed = -speed;
-        }
-        if(speed != currentSpeed) {
-            currentSpeed = speed;
+        int motorSpeed = (msg->data[0] << 8) | msg->data[1];
+        float speed = (motorSpeed - 20000) * 0.001574;
+        int displaySpeed = round(speed);
+        if (displaySpeed != currentSpeed)
+        {
+            currentSpeed = displaySpeed;
             updateDisplays(UpdateType::SPEED);
         }
     }
@@ -408,7 +407,15 @@ void RoadSweeperGui::updateLaunchStatus(QPushButton* button, LaunchStatus status
 void RoadSweeperGui::toggleAutoSweep(LaunchComponent &component)
 {
     toggleLaunch(component.process, component.button, component.launched, component.launchFile);
+    disableSweep();
     changeSweepCheckBox(component.launched);
+}
+
+void RoadSweeperGui::disableSweep()
+{
+    std_srvs::SetBool srv;
+    srv.request.data = false;
+    sweepClient.call(srv);
 }
 
 void RoadSweeperGui::changeSweepCheckBox(bool state)
@@ -430,9 +437,9 @@ void RoadSweeperGui::changeSweepCheckBox(bool state)
 
 void RoadSweeperGui::controlSweep()
 {
-    std_msgs::Bool msg;
-    msg.data = sweepCheckBox->isChecked();
-    sweepPublisher.publish(msg);
+    std_srvs::SetBool srv;
+    srv.request.data = sweepCheckBox->isChecked();
+    sweepClient.call(srv);
 }
 
 void RoadSweeperGui::controlAutoSweep()

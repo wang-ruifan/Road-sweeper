@@ -21,7 +21,7 @@ private:
 public:
     AutoSweep()
     {
-        // 从参数服务器获取搜索阈值参数
+        // 从参数服务器获取搜索阈值
         ros::NodeHandle private_nh("~");
         private_nh.param("search_threshold", search_threshold_, 0.5);
         ROS_INFO("Search threshold set to: %.2f meters", search_threshold_);
@@ -37,19 +37,7 @@ public:
         enable_service_ = nh_.advertiseService("enable_auto_sweep", &AutoSweep::enableCallback, this);
     }
 
-    ~AutoSweep()
-    {
-        std_srvs::SetBool srv;
-        srv.request.data = false;
-        if (sweep_client_.call(srv))
-        {
-            ROS_INFO("Sweep control disabled on shutdown");
-        }
-        else
-        {
-            ROS_ERROR("Failed to disable sweep control on shutdown");
-        }
-    }
+    ~AutoSweep(){}
 
 private:
     struct LaneData

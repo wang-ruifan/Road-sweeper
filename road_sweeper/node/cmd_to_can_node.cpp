@@ -3,6 +3,15 @@
 
 ros::Publisher can_pub;
 
+/*====== 话题名称 ======*/
+std::string g_vehicle_cmd_topic = "/vehicle_cmd";
+std::string g_sweep_service_topic = "/sweep_control";
+std::string g_can_pub_topic = "/sent_messages";
+
+/*====== 车辆控制相关参数 ======*/
+// 最大速度限制
+double g_max_linear_speed = 3.0; 
+
 /*====== 清扫相关参数 ======*/
 // 当前清扫状态
 bool current_sweep_status = false;
@@ -89,6 +98,12 @@ void vehicleCmdCallback(const autoware_msgs::VehicleCmd::ConstPtr& msg) {
     // 判断档位：正值速度为前进，负值速度为后退
     uint8_t gear = (speed >= 0) ? static_cast<uint8_t>(GearControl::FORWARD) : static_cast<uint8_t>(GearControl::BACKWARD);
     speed = fabs(speed);  // 取绝对值用于速度计算
+    
+    // 应用最大速度限制
+    if (speed > g_max_linear_speed) {
+        ROS_INFO_THROTTLE(1.0, "Limiting speed from %f to %f m/s", speed, g_max_linear_speed);
+        speed = g_max_linear_speed;
+    }
 
     // 线速度转换为转速
     float wheel_speed = speed / SPEED_TO_WHEEL;  // 单位为 RPM
@@ -133,8 +148,16 @@ void vehicleCmdCallback(const autoware_msgs::VehicleCmd::ConstPtr& msg) {
 int main(int argc, char** argv) {
     ros::init(argc, argv, "cmd_to_can_node");
     ros::NodeHandle nh;
+    ros::NodeHandle private_nh("~");
 
-    ROS_INFO("cmd_to_can_node started, subscribing /vehicle_cmd, providing /sweep_control service, publishing /sent_message");
+    private_nh.param<std::string>("cmd_topic", g_vehicle_cmd_topic, "/vehicle_cmd");
+    private_nh.param<std::string>("sweep_service_topic", g_sweep_service_topic, "/sweep_control");
+    private_nh.param<std::string>("can_pub_topic", g_can_pub_topic, "/sent_messages");
+    private_nh.param<double>("max_linear_speed", g_max_linear_speed, 3.0);
+
+    ROS_INFO("cmd_to_can_node started, subscribing %s, providing %s service, publishing %s",
+             g_vehicle_cmd_topic.c_str(), g_sweep_service_topic.c_str(), g_can_pub_topic.c_str());
+    ROS_INFO("Maximum linear speed set to: %f m/s", g_max_linear_speed);
 
     // 订阅 Autoware 发布的 vehicle_cmd
     ros::Subscriber cmd_sub = nh.subscribe("/vehicle_cmd", 10, vehicleCmdCallback);
