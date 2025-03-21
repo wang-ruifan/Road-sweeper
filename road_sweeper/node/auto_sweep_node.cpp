@@ -17,6 +17,7 @@ class AutoSweep
 private:
     // 可配置参数
     double search_threshold_;  // 搜索阈值：当车辆移动距离超过此值时重新搜索最近车道
+    double max_valid_distance_; // 最大有效距离：超过此距离的车道被视为无效
 
 public:
     AutoSweep()
@@ -25,6 +26,8 @@ public:
         ros::NodeHandle private_nh("~");
         private_nh.param("search_threshold", search_threshold_, 0.5);
         ROS_INFO("Search threshold set to: %.2f meters", search_threshold_);
+        private_nh.param("max_valid_distance", max_valid_distance_, 3.0);
+        ROS_INFO("Maximum valid distance set to: %.2f meters", max_valid_distance_);
         private_nh.param("output_debug_info", output_debug_info_, false);
         ROS_INFO("Output debug info: %s", output_debug_info_ ? "true" : "false");
 
@@ -263,7 +266,17 @@ private:
         if (closest_lane_id != -1)
         {
             updateLastPose(current_x, current_y, closest_lane_id, min_distance);
-            if(lanes_.at(closest_lane_id).issweep == 1) {
+            if (min_distance > max_valid_distance_)
+            {
+                if (output_debug_info_)
+                {
+                    ROS_INFO("Distance to nearest lane (%.2f m) exceeds max valid distance (%.2f m), disabling sweep",
+                             min_distance, max_valid_distance_);
+                }
+                is_sweep = false;
+            }
+            else if (lanes_.at(closest_lane_id).issweep == 1)
+            {
                 is_sweep = true;
             }
         }

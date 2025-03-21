@@ -20,6 +20,7 @@ bool current_sweep_status = false;
 static uint8_t g_sweep_data = 0x00;                 // 清扫相关控制位 (data[6])
 static uint8_t g_gear_data = 0x00;                  // 档位控制位 (data[7])
 
+/*====== 回调函数 ======*/
 // 清扫控制服务回调函数
 bool sweepControlService(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
 {
@@ -145,6 +146,7 @@ void vehicleCmdCallback(const autoware_msgs::VehicleCmd::ConstPtr& msg) {
     ROS_INFO("Publinshing CAN msg: ID = 0x%x, Steering Angle = %d, Wheel Speed = %d", can_frame.id, chassis_angle_encoded, wheel_speed_can);
 }
 
+/*====== 主函数 ======*/
 int main(int argc, char** argv) {
     ros::init(argc, argv, "cmd_to_can_node");
     ros::NodeHandle nh;

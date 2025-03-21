@@ -21,6 +21,7 @@ RoadSweeperGui::RoadSweeperGui(QWidget *parent)
     }
     , nh()
 {
+    QProcess::execute("systemctl", QStringList() << "restart" << "can0.service");
     initializeWidgets();
     setupLayouts();
     connectSignalsAndSlots();
@@ -41,8 +42,8 @@ void RoadSweeperGui::initializeSpeedDisplay()
     speedLabel = new QLabel("Speed:", this);
     speedLabel->setStyleSheet("QLabel { font-size: 14pt; }");
     speedDisplay = new QLCDNumber(this);
-    speedDisplay->setDigitCount(2);
-    speedDisplay->setSmallDecimalPoint(false);
+    speedDisplay->setDigitCount(4);
+    speedDisplay->setSmallDecimalPoint(true);
     speedDisplay->setSegmentStyle(QLCDNumber::Flat);
     speedDisplay->setStyleSheet("QLCDNumber { background-color: white; color: green; }");
     speedDisplay->setMinimumSize(150, 50);
@@ -235,8 +236,7 @@ void RoadSweeperGui::setupROS()
     {
         updateSpeedFlag = false;
         int motorSpeed = (msg->data[0] << 8) | msg->data[1];
-        float speed = (motorSpeed - 20000) * 0.001574;
-        int displaySpeed = round(speed);
+        float displaySpeed = (motorSpeed - 20000) * 0.001574;
         if (displaySpeed != currentSpeed)
         {
             currentSpeed = displaySpeed;

@@ -121,7 +121,7 @@ private:
     QLabel *speedLabel;
     QLabel *unitLabel;
     QLabel *batteryLabel;
-    int currentSpeed;
+    float currentSpeed;
     int batteryLevel;
     double currentAngle;
 
