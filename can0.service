@@ -1,0 +1,11 @@
+[Unit]
+Description=Setup can0 and set bitrate 500k
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/ip link set can0 up type can bitrate 500000
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
