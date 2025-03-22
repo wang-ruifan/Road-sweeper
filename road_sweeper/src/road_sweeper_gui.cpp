@@ -13,7 +13,7 @@ RoadSweeperGui::RoadSweeperGui(QWidget *parent)
         {"global_planning.launch", "Global Planning", PanelName::CONTROL},
         {"perception.launch", "Perception", PanelName::CONTROL},
         {"local_planning.launch", "Local Planning", PanelName::CONTROL},
-        {"cmd_output.launch", "Cmd Output", PanelName::CONTROL},
+        {"control.launch", "Control", PanelName::CONTROL},
         {"cmd_to_can.launch", "Cmd To Can", PanelName::CONTROL},
         {"auto_sweep.launch", "Auto Sweep Node", PanelName::CONTROL},
         {"rviz.launch", "RViz", PanelName::DISPLAY},
