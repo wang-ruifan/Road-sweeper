@@ -171,6 +171,34 @@ sudo cp -r /usr/local/include/eigen3/Eigen /usr/local/include
 
 **注：以上1.7步骤的内容参考了[CSDN博客](https://blog.csdn.net/reasonyuanrobot/article/details/114372363)并经过我自己的验证可以完成安装配置。**
 
+### 1.8 安装CAN通信相关（需要结合底盘及PCAN才能验证安装）
+
+首先安装PCAN的Linux驱动包  
+
+然后可以安装can-utils来测试CAN通信  
+
+```shell
+sudo apt install can-utils
+```
+
+安装好后，即可通过以下命令接收can总线中的消息  
+
+```shell
+candump can0
+```
+
+可以通过以下命令向can总线中发送消息  
+例子中帧头为501，数据为0011223344556677
+
+
+```shell
+cansend vcan0 501#0011223344556677
+```
+
+但是每次重启之后，都需要手动开启can0虚拟网络，设置比特率，非常麻烦。  
+所以我写了一个服务实现虚拟网络的开启与比特率的服务，需要手动安装。  
+服务在Docs分支下，需[下载](https://github.com/wang-ruifan/Road-sweeper/blob/docs/can0.service)后放到
+
 ## 2. ROS 环境配置
 
 ### 2.1 安装ROS Melodic
@@ -270,6 +298,8 @@ colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```shell
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-select xxx
 ```
+
+
 
 # Road-sweeper based on Jetson and Autoware Installation Guide
 
