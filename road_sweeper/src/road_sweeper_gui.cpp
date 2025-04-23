@@ -8,7 +8,7 @@ RoadSweeperGui::RoadSweeperGui(QWidget *parent)
     , launchComponents{
         {"setup.launch", "Setup", PanelName::CONTROL},
         {"map.launch", "Map", PanelName::CONTROL},
-        {"lidar_imu.launch", "Lidar and IMU", PanelName::CONTROL},
+        {"lidar_imu.launch", "Lidar and GNSS", PanelName::CONTROL},
         {"localization.launch", "Localization", PanelName::CONTROL},
         {"global_planning.launch", "Global Planning", PanelName::CONTROL},
         {"perception.launch", "Perception", PanelName::CONTROL},
@@ -21,7 +21,6 @@ RoadSweeperGui::RoadSweeperGui(QWidget *parent)
     }
     , nh()
 {
-    QProcess::execute("systemctl", QStringList() << "restart" << "can0.service");
     initializeWidgets();
     setupLayouts();
     connectSignalsAndSlots();
@@ -236,7 +235,7 @@ void RoadSweeperGui::setupROS()
     {
         updateSpeedFlag = false;
         int motorSpeed = (msg->data[0] << 8) | msg->data[1];
-        float displaySpeed = (motorSpeed - 20000) * 0.001574;
+        float displaySpeed = (motorSpeed - 20000) * 0.001574 * 3.6;
         if (displaySpeed != currentSpeed)
         {
             currentSpeed = displaySpeed;
