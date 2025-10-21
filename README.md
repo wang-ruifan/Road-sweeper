@@ -84,35 +84,35 @@
 
 ### lanelet2_extension包信息文件: 删除对libgeographiclib-dev的依赖
 
-修改了[package.xml](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/lanelet2_extension/package.xml)，删除了其中对libgeographiclib-dev的依赖。  
+修改了[package.xml](https://github.com/wang-ruifan/Road-sweeper/tree/source/autoware/common/lanelet2_extension/package.xml)，删除了其中对libgeographiclib-dev的依赖。  
 
 ### autoware_build_flag的cmake文件：将需求CUDA版本从小于等于10.0变为小于等于10.2
 
-修改了[build_flages的cmake文件](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/autoware_build_flags/cmake/autoware_build_flags-extras.cmake)，将需要CUDA版本<=10.0改为<=10.2。  
+修改了[build_flages的cmake文件](https://github.com/wang-ruifan/Road-sweeper/tree/source/autoware/common/autoware_build_flags/cmake/autoware_build_flags-extras.cmake)，将需要CUDA版本<=10.0改为<=10.2。  
 
 ### op_global_planner节点：修改MainLoop主循环中执行重规划的条件
 
-修改了[op全局规划](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/core_planning/op_global_planner/nodes/op_global_planner_core.cpp)的主循环MainLoop中，执行Replanning业务逻辑的条件，增加了“m_iCurrentGoalIndex < m_GoalsPos.size()-1”。  
+修改了[op全局规划](https://github.com/wang-ruifan/Road-sweeper/tree/source/autoware/core_planning/op_global_planner/nodes/op_global_planner_core.cpp)的主循环MainLoop中，执行Replanning业务逻辑的条件，增加了“m_iCurrentGoalIndex < m_GoalsPos.size()-1”。  
 
 ### op_planner的车辆行为状态对象：修改当前路径任务完成时，发布的状态信息
 
-修改了[op_planner的车辆行为状态对象](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/op_planner/src/BehaviorStateMachine.cpp)，修改了其中的当前路径任务完成对象的GetNextState方法的业务逻辑，在当前没有目标时，返回当前的状态; 否则将当前目标设为上一个目标，并发布状态为前进。  
+修改了[op_planner的车辆行为状态对象](https://github.com/wang-ruifan/Road-sweeper/tree/source/autoware/common/op_planner/src/BehaviorStateMachine.cpp)，修改了其中的当前路径任务完成对象的GetNextState方法的业务逻辑，在当前没有目标时，返回当前的状态; 否则将当前目标设为上一个目标，并发布状态为前进。  
 
 ### GNSS信息转换对象：修改所在地经纬度，增加转换矩阵
 
-修改了[GNSS信息转换为pose对象](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/common/gnss/src/geo_pos_conv.cpp)中的set_plane方法，在当传入的num为7时，设置纬度和经度为建图时录制的bag的/gps/fix话题的第一帧数据转换为度分秒后得到的度和分。同时在conv_llh2xyz经纬度转换为位姿方法的最后添加使用旋转矩阵和平移向量进行计算。  
+修改了[GNSS信息转换为pose对象](https://github.com/wang-ruifan/Road-sweeper/tree/source/autoware/common/gnss/src/geo_pos_conv.cpp)中的set_plane方法，在当传入的num为7时，设置纬度和经度为建图时录制的bag的/gps/fix话题的第一帧数据转换为度分秒后得到的度和分。同时在conv_llh2xyz经纬度转换为位姿方法的最后添加使用旋转矩阵和平移向量进行计算。  
 
 ### NDT定位节点：修改使用GNSS辅助定位时的位姿重置逻辑
 
-修改了[NDT-Matching定位](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/core_perception/lidar_localizer/nodes/ndt_matching/ndt_matching.cpp)的gnss_callback回调函数的业务逻辑，当启用GNSS进行辅助定位，同时没有发布初始位姿或ndt定位质量差时。直接使用当前的gnss位姿信息，发布初始位姿。同时修改调用gnss重置位姿的阈值为1，并添加一个初始位姿发布者initialpose_pub并设置发布话题名为/initialpose。  
+修改了[NDT-Matching定位](https://github.com/wang-ruifan/Road-sweeper/tree/source/autoware/core_perception/lidar_localizer/nodes/ndt_matching/ndt_matching.cpp)的gnss_callback回调函数的业务逻辑，当启用GNSS进行辅助定位，同时没有发布初始位姿或ndt定位质量差时。直接使用当前的gnss位姿信息，发布初始位姿。同时修改调用gnss重置位姿的阈值为1，并添加一个初始位姿发布者initialpose_pub并设置发布话题名为/initialpose。  
 
 ### 点云滤波跟踪节点：修改订阅话题
 
-修改了[点云卡尔曼滤波跟踪](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/core_perception/lidar_kf_contour_track/nodes/lidar_kf_contour_track/lidar_kf_contour_track_core.cpp)的sub_cloud_clusters订阅者订阅的话题名，从/cloud_clusters修改为/detection/lidar_detector/cloud_clusters。  
+修改了[点云卡尔曼滤波跟踪](https://github.com/wang-ruifan/Road-sweeper/tree/source/autoware/core_perception/lidar_kf_contour_track/nodes/lidar_kf_contour_track/lidar_kf_contour_track_core.cpp)的sub_cloud_clusters订阅者订阅的话题名，从/cloud_clusters修改为/detection/lidar_detector/cloud_clusters。  
 
 ### 点云欧式聚类节点：增加发布信息
 
-修改了[雷达点云欧式聚类](https://github.com/wang-ruifan/Road-sweeper/tree/source/src/autoware/core_perception/lidar_euclidean_cluster_detect/nodes/lidar_euclidean_cluster_detect/lidar_euclidean_cluster_detect.cpp)的publishCloudClusters方法内的点云聚类发布消息的内容，增加了对聚类转换的平均点、状态和id的赋值。  
+修改了[雷达点云欧式聚类](https://github.com/wang-ruifan/Road-sweeper/tree/source/autoware/core_perception/lidar_euclidean_cluster_detect/nodes/lidar_euclidean_cluster_detect/lidar_euclidean_cluster_detect.cpp)的publishCloudClusters方法内的点云聚类发布消息的内容，增加了对聚类转换的平均点、状态和id的赋值。  
 
 # Road Sweeper Project
 
